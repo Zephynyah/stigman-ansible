@@ -1,0 +1,108 @@
+{{ ansible_managed | comment }}
+
+{% if keycloak_db_enabled %}
+# Database
+db={{ keycloak_jdbc_engine }}
+db-url={{ keycloak_jdbc_url }}
+db-username={{ keycloak_db_user }}
+{% if not keycloak.config_key_store_enabled %}
+db-password={{ keycloak_db_pass }}
+{% endif %}
+{% endif %}
+
+{% if keycloak_hostname_strict_https is defined and keycloak_hostname_strict_https is sameas true -%}
+hostname-strict-https=true
+{% endif -%}
+{% if keycloak_hostname_strict_https is defined and keycloak_hostname_strict_https is sameas false -%}
+hostname-strict-https=false
+{% endif -%}
+
+{% if keycloak.config_key_store_enabled %}
+# Config store
+config-keystore={{ keycloak_config_key_store_file }}
+config-keystore-password={{ keycloak_config_key_store_password }}
+config-keystore-type=PKCS12
+{% endif %}
+
+# Observability
+metrics-enabled={{ keycloak_metrics_enabled | lower }}
+health-enabled={{ keycloak_health_enabled | lower }}
+
+# HTTP
+http-enabled={{ keycloak_http_enabled | lower }}
+http-port={{ keycloak_http_port }}
+http-relative-path={{ keycloak_http_relative_path }}
+
+# HTTPS
+https-port={{ keycloak_https_port }}
+{% if keycloak_https_key_file_enabled %}
+https-certificate-file={{ keycloak_cert_file}}
+https-certificate-key-file={{ keycloak_key_file }}
+{% endif %}
+{% if keycloak_https_key_store_enabled %}
+https-key-store-file={{ keycloak_https_key_store_file }}
+https-key-store-password={{ keycloak_https_key_store_password }}
+{% endif %}
+{% if keycloak_https_trust_store_enabled %}
+https-trust-store-file={{ keycloak_https_trust_store_file }}
+https-trust-store-password={{ keycloak_https_trust_store_password }}
+{% endif %}
+
+# Client URL configuration
+{% if keycloak_frontend_url %}
+hostname-url={{ keycloak_frontend_url }}
+{% else %}
+hostname={{ keycloak_host }}
+hostname-port={{ keycloak_port }}
+hostname-path={{ keycloak_path }}
+{% endif %}
+hostname-admin-url={{ keycloak_admin_url }}
+hostname-strict={{ keycloak_hostname_strict | lower }}
+hostname-strict-backchannel={{ keycloak_hostname_strict_backchannel | lower }}
+
+# Cluster
+{% if keycloak_ha_enabled %}
+cache=ispn
+cache-config-file=cache-ispn.xml
+{% if keycloak_ha_enabled and keycloak_ha_discovery == 'TCPPING' %}
+# cache-stack=tcp # configured directly in `cache-ispn.xml`
+{% endif %}
+{% endif %}
+
+{% if keycloak_proxy_headers | length > 0 %}
+proxy-headers={{ keycloak_proxy_headers | lower }}
+{% elif keycloak_proxy_mode is defined and keycloak_proxy_mode != "none" %}
+# Deprecated Proxy configuration
+proxy={{ keycloak_proxy_mode }}
+{% endif %}
+
+spi-sticky-session-encoder-infinispan-should-attach-route={{ keycloak_spi_sticky_session_encoder_infinispan_should_attach_route | d(true) | lower }}
+
+# Transaction
+transaction-xa-enabled={{ keycloak_transaction_xa_enabled | lower }}
+
+# Logging
+#log-format=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n
+log={{ keycloak_log }}
+log-level={{ keycloak.log.level }}
+log-file={{ keycloak.log.file }}
+log-file-format={{ keycloak.log.format }}
+
+# Vault
+{% if keycloak_ks_vault_enabled %}
+vault=keystore
+vault-file={{ keycloak_ks_vault_file }}
+vault-type={{ keycloak_ks_vault_type }}
+vault-pass={{ keycloak_ks_vault_pass }}
+{% endif %}
+
+
+# Providers
+{% for provider in keycloak_providers %}
+{% if provider.default is defined and provider.default %}
+spi-{{ provider.spi }}-provider={{ provider.id }}
+{% endif %}
+{% if provider.properties is defined %}{% for property in provider.properties %}
+spi-{{ provider.spi }}-{{ provider.id }}-{{ property.key }}={{ property.value }}
+{% endfor %}{% endif %}
+{% endfor %}

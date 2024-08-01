@@ -1,0 +1,177 @@
+---
+### Configuration specific to keycloak
+keycloak_pkg: tar.gz
+keycloak_version: 24.0.4
+keycloak_archive: "keycloak-{{ keycloak_version }}.{{ keycloak_pkg }}"
+keycloak_download_url: "https://github.com/keycloak/keycloak/releases/download/{{ keycloak_version }}/{{ keycloak_archive }}"
+keycloak_installdir: "{{ keycloak_dest }}/keycloak-{{ keycloak_version }}"
+
+# whether to install from local archive
+keycloak_offline_install: false
+
+keycloak_show_deprecation_warnings: true
+
+### Install location and service settings
+keycloak_java_home:
+keycloak_dest: /opt
+keycloak_home: "{{ keycloak_installdir }}"
+keycloak_config_dir: "{{ keycloak_home }}/conf"
+keycloak_start_dev: false
+keycloak_service_user: keycloak
+keycloak_service_group: keycloak
+keycloak_service_restart_always: false
+keycloak_service_restart_on_failure: false
+keycloak_service_restartsec: "10s"
+
+keycloak_configure_firewalld: false
+keycloak_configure_iptables: false
+
+### administrator console password
+keycloak_admin_user: admin
+keycloak_admin_pass:
+keycloak_master_realm: master
+
+### Configuration settings
+keycloak_bind_address: 0.0.0.0
+keycloak_host: localhost
+keycloak_port: -1
+keycloak_path:
+keycloak_http_enabled: true
+keycloak_http_port: 8080
+keycloak_https_port: 8443
+keycloak_ajp_port: 8009
+keycloak_jgroups_port: 7800
+keycloak_java_heap_opts: "-Xms1024m -Xmx2048m"
+keycloak_java_jvm_opts: "-XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+  -Dsun.err.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -XX:+ExitOnOutOfMemoryError
+  -Djava.security.egd=file:/dev/urandom -XX:+UseParallelGC -XX:GCTimeRatio=4
+  -XX:AdaptiveSizePolicyWeight=90 -XX:FlightRecorderOptions=stackdepth=512"
+keycloak_java_opts: "{{ keycloak_java_heap_opts + ' ' + keycloak_java_jvm_opts }}"
+keycloak_additional_env_vars: []
+
+### TLS/HTTPS configuration
+keycloak_https_key_file_enabled: false
+keycloak_key_file_copy_enabled: false
+keycloak_key_content: ""
+keycloak_key_file: "/etc/pki/tls/private/server.key.pem"
+keycloak_cert_file_copy_enabled: false
+keycloak_cert_file_src: ""
+keycloak_cert_file: "/etc/pki/tls/certs/server.crt.pem"
+
+#### key store configuration
+keycloak_https_key_store_enabled: false
+keycloak_https_key_store_file: "{{ keycloak.home }}/conf/key_store.p12"
+keycloak_https_key_store_password: ''
+
+##### trust store configuration
+keycloak_https_trust_store_enabled: false
+keycloak_https_trust_store_file: "{{ keycloak.home }}/conf/trust_store.p12"
+keycloak_https_trust_store_password: ''
+
+### configuration key store configuration
+keycloak_config_key_store_file: "{{ keycloak.home }}/conf/conf_store.p12"
+keycloak_config_key_store_password: ''
+
+### Enable configuration for database backend, clustering and remote caches on infinispan
+keycloak_ha_enabled: false
+keycloak_ha_discovery: "TCPPING"
+
+### Enable database configuration, must be enabled when HA is configured
+keycloak_db_enabled: "{{ keycloak_ha_enabled }}"
+keycloak_systemd_wait_for_port: "{{ keycloak_ha_enabled }}"
+keycloak_systemd_wait_for_port_number: "{{ keycloak_https_port }}"
+keycloak_systemd_wait_for_log: false
+keycloak_systemd_wait_for_timeout: 60
+keycloak_systemd_wait_for_delay: 10
+
+### keycloak frontend url
+keycloak_frontend_url:
+keycloak_admin_url:
+
+### Set the path relative to / for serving resources. The path must start with a /
+### (set to `/auth` for retrocompatibility with pre-quarkus releases)
+keycloak_http_relative_path: /
+
+# Disables dynamically resolving the hostname from request headers.
+# Should always be set to true in production, unless proxy verifies the Host header.
+keycloak_hostname_strict: true
+# By default backchannel URLs are dynamically resolved from request headers to allow internal and external applications.
+# If all applications use the public URL this option should be enabled.
+keycloak_hostname_strict_backchannel: false
+
+# The proxy headers that should be accepted by the server. ['', 'forwarded', 'xforwarded']
+keycloak_proxy_headers: ""
+
+# deprecated: proxy address forwarding mode if the server is behind a reverse proxy. [none, edge, reencrypt, passthrough]
+keycloak_proxy_mode: edge
+
+# disable xa transactions
+keycloak_transaction_xa_enabled: true
+
+# If the route should be attached to cookies to reflect the node that owns a particular session.
+# If false, route is not attached to cookies and we rely on the session affinity capabilities from reverse proxy
+keycloak_spi_sticky_session_encoder_infinispan_should_attach_route: true
+
+keycloak_metrics_enabled: false
+keycloak_health_enabled: true
+
+### infinispan remote caches access (hotrod)
+keycloak_ispn_user: supervisor
+keycloak_ispn_pass: supervisor
+keycloak_ispn_hosts: "localhost:11222"
+keycloak_ispn_sasl_mechanism: SCRAM-SHA-512
+keycloak_ispn_use_ssl: false
+
+# if ssl is enabled, import ispn server certificate here
+keycloak_ispn_trust_store_path: /etc/pki/java/cacerts
+keycloak_ispn_trust_store_password: changeit
+
+### database backend engine: values [ 'postgres', 'mariadb' ]
+keycloak_jdbc_engine: postgres
+
+### database backend credentials
+keycloak_db_user: keycloak-user
+keycloak_db_pass: keycloak-pass
+keycloak_jdbc_url: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].url }}"
+keycloak_jdbc_driver_version: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].version }}"
+
+# override the variables above, following defaults show minimum supported versions
+keycloak_default_jdbc:
+  postgres:
+    url: 'jdbc:postgresql://localhost:5432/keycloak'
+    version: 9.4.1212
+  mariadb:
+    url: 'jdbc:mariadb://localhost:3306/keycloak'
+    version: 2.7.4
+  mssql:
+    url: 'jdbc:sqlserver://localhost:1433;databaseName=keycloak;'
+    version: 12.4.2
+    driver_jar_url: "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/12.4.2.jre11/mssql-jdbc-12.4.2.jre11.jar"
+    # cf. https://access.redhat.com/documentation/en-us/red_hat_build_of_keycloak/24.0/html/server_guide/db-#db-installing-the-microsoft-sql-server-driver
+
+### logging configuration
+keycloak_log: file
+keycloak_log_level: info
+keycloak_log_file: data/log/keycloak.log
+keycloak_log_format: '%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n'
+keycloak_log_target: /var/log/keycloak
+keycloak_log_max_file_size: 10M
+keycloak_log_max_backup_index: 10
+keycloak_log_file_suffix: '.yyyy-MM-dd.zip'
+
+# keystore-based vault
+keycloak_ks_vault_enabled: false
+keycloak_ks_vault_file: "{{ keycloak_config_dir }}/keystore.p12"
+keycloak_ks_vault_type: PKCS12
+keycloak_ks_vault_pass:
+
+keycloak_providers: []
+keycloak_policies: []
+keycloak_supported_policy_types: ['password-blacklists']
+
+# files in restart directory (one of [ 'serial', 'none', 'serial_then_parallel' ]), or path to file when providing custom strategy
+keycloak_restart_strategy: restart/serial.yml
+keycloak_restart_health_check: true
+keycloak_restart_health_check_delay: 10
+keycloak_restart_health_check_reries: 25
+keycloak_restart_pause: 15

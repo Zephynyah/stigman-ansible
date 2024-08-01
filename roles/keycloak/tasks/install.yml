@@ -1,0 +1,290 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - keycloak.home is defined
+      - keycloak_service_user is defined
+      - keycloak_dest is defined
+      - keycloak_archive is defined
+      - keycloak_download_url is defined
+      - keycloak_version is defined
+    quiet: true
+
+- name: Check for an existing deployment
+  become: true
+  ansible.builtin.stat:
+    path: "{{ keycloak.home }}"
+  register: existing_deploy
+
+- name: "Create {{ keycloak.service_name }} service user/group"
+  become: true
+  ansible.builtin.user:
+    name: "{{ keycloak.service_user }}"
+    home: /opt/keycloak
+    system: true
+    create_home: false
+
+- name: "Create {{ keycloak.service_name }} install location"
+  become: true
+  ansible.builtin.file:
+    dest: "{{ keycloak_dest }}"
+    state: directory
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0750'
+
+- name: Create directory for ansible custom facts
+  become: true
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: /etc/ansible/facts.d
+
+## check remote archive
+- name: Set download archive path
+  ansible.builtin.set_fact:
+    archive: "{{ keycloak_dest }}/{{ keycloak.bundle }}"
+
+- name: Check download archive path
+  become: true
+  ansible.builtin.stat:
+    path: "{{ archive }}"
+  register: archive_path
+
+## download to controller
+- name: Check local download archive path
+  ansible.builtin.stat:
+    path: "{{ lookup('env', 'PWD') }}"
+  register: local_path
+  delegate_to: localhost
+  run_once: true
+  become: false
+
+- name: Download keycloak archive
+  ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
+    url: "{{ keycloak_download_url }}"
+    dest: "{{ local_path.stat.path }}/{{ keycloak.bundle }}"
+    mode: '0640'
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - archive_path is defined
+    - archive_path.stat is defined
+    - not archive_path.stat.exists
+    - not keycloak.offline_install
+    - not rhbk_enable is defined or not rhbk_enable
+
+- name: Perform download from RHN using JBoss Network API
+  delegate_to: localhost
+  run_once: true
+  when:
+    - archive_path is defined
+    - archive_path.stat is defined
+    - not archive_path.stat.exists
+    - rhbk_enable is defined and rhbk_enable
+    - not keycloak.offline_install
+  block:
+    - name: Retrieve product download using JBoss Network API
+      middleware_automation.common.product_search:
+        client_id: "{{ rhn_username }}"
+        client_secret: "{{ rhn_password }}"
+        product_type: DISTRIBUTION
+        product_version: "{{ rhbk_version }}"
+        product_category: "{{ rhbk_product_category }}"
+      register: rhn_products
+      no_log: "{{ omit_rhn_output | default(true) }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Determine install zipfile from search results
+      ansible.builtin.set_fact:
+        rhn_filtered_products: "{{ rhn_products.results | selectattr('file_path', 'match', '[^/]*/' + rhbk_archive + '$') }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Download Red Hat Build of Keycloak
+      middleware_automation.common.product_download: # noqa risky-file-permissions delegated, uses controller host user
+        client_id: "{{ rhn_username }}"
+        client_secret: "{{ rhn_password }}"
+        product_id: "{{ (rhn_filtered_products | first).id }}"
+        dest: "{{ local_path.stat.path }}/{{ keycloak.bundle }}"
+        mode: '0640'
+      no_log: "{{ omit_rhn_output | default(true) }}"
+      delegate_to: localhost
+      run_once: true
+      become: false
+
+- name: Perform download of RHBK from alternate download location
+  delegate_to: localhost
+  run_once: true
+  become: false
+  when:
+    - archive_path is defined
+    - archive_path.stat is defined
+    - not archive_path.stat.exists
+    - rhbk_enable is defined and rhbk_enable
+    - not keycloak.offline_install
+    - keycloak_alternate_download_url is defined
+  ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
+    url: "{{ keycloak_alternate_download_url }}"
+    dest: "{{ local_path.stat.path }}/{{ keycloak.bundle }}"
+    mode: '0640'
+    url_username: "{{ keycloak_download_user | default(omit) }}"
+    url_password: "{{ keycloak_download_pass | default(omit) }}"
+    validate_certs: "{{ keycloak_download_validate_certs | default(omit) }}"
+
+- name: Check downloaded archive
+  ansible.builtin.stat:
+    path: "{{ local_path.stat.path }}/{{ keycloak.bundle }}"
+  register: local_archive_path
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+## copy and unpack
+- name: Copy archive to target nodes
+  ansible.builtin.copy:
+    src: "{{ local_path.stat.path }}/{{ keycloak.bundle }}"
+    dest: "{{ archive }}"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  register: new_version_downloaded
+  when:
+    - not archive_path.stat.exists
+    - local_archive_path.stat is defined
+    - local_archive_path.stat.exists
+  become: true
+
+- name: "Check target directory: {{ keycloak.home }}/bin/"
+  ansible.builtin.stat:
+    path: "{{ keycloak.home }}/bin/"
+  register: path_to_workdir
+  become: true
+
+- name: "Extract Keycloak archive on target" # noqa no-handler need to run this here
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ archive }}"
+    dest: "{{ keycloak_dest }}"
+    creates: "{{ keycloak.home }}/bin/"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+  become: true
+  when:
+    - (not path_to_workdir.stat.exists) or new_version_downloaded.changed
+  notify:
+    - restart keycloak
+
+- name: Inform decompression was not executed
+  ansible.builtin.debug:
+    msg: "{{ keycloak.home }} already exists and version unchanged, skipping decompression"
+  when:
+    - (not new_version_downloaded.changed) and path_to_workdir.stat.exists
+
+- name: "Copy private key to target"
+  ansible.builtin.copy:
+    content: "{{ keycloak_key_content }}"
+    dest: "{{ keycloak_key_file }}"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  become: true
+  when:
+    - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
+    - keycloak_key_file_copy_enabled is defined and keycloak_key_file_copy_enabled
+    - keycloak_key_content | length > 0
+
+- name: "Copy certificate to target"
+  ansible.builtin.copy:
+    src: "{{ keycloak_cert_file_src }}"
+    dest: "{{ keycloak_cert_file }}"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0644'
+  become: true
+  when:
+    - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
+    - keycloak_cert_file_copy_enabled is defined and keycloak_cert_file_copy_enabled
+    - keycloak_cert_file_src | length > 0
+
+- name: "Install {{ keycloak_jdbc_engine }} JDBC driver"
+  ansible.builtin.include_tasks: jdbc_driver.yml
+  when:
+    - rhbk_enable is defined and rhbk_enable
+    - keycloak_default_jdbc[keycloak_jdbc_engine].driver_jar_url is defined
+
+- name: "Download custom providers via http"
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ keycloak.home }}/providers/{{ item.id }}.jar"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  become: true
+  loop: "{{ keycloak_providers }}"
+  when: item.url is defined and item.url | length > 0
+  notify: "{{ ['rebuild keycloak config', 'restart keycloak'] if not item.restart is defined or not item.restart else [] }}"
+
+# this requires the `lxml` package to be installed; we redirect this step to localhost such that we do need to install it on the remote hosts
+- name: "Download custom providers to localhost using maven"
+  middleware_automation.common.maven_artifact:
+    repository_url: "{{ item.maven.repository_url }}"
+    group_id: "{{ item.maven.group_id }}"
+    artifact_id: "{{ item.maven.artifact_id }}"
+    version: "{{ item.maven.version | default(omit) }}"
+    username: "{{ item.maven.username | default(omit) }}"
+    password: "{{ item.maven.password | default(omit) }}"
+    dest: "{{ local_path.stat.path }}/{{ item.id }}.jar"
+  delegate_to: "localhost"
+  run_once: true
+  loop: "{{ keycloak_providers }}"
+  when: item.maven is defined
+  no_log: "{{ item.maven.password is defined and item.maven.password | length > 0 | default(false) }}"
+  notify: "{{ ['rebuild keycloak config', 'restart keycloak'] if not item.restart is defined or not item.restart else [] }}"
+
+- name: "Upload local maven providers"
+  ansible.builtin.copy:
+    src: "{{ local_path.stat.path }}/{{ item.id }}.jar"
+    dest: "{{ keycloak.home }}/providers/{{ item.id }}.jar"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  become: true
+  loop: "{{ keycloak_providers }}"
+  when: item.maven is defined
+  no_log: "{{ item.maven.password is defined and item.maven.password | length > 0 | default(false) }}"
+
+- name: "Upload local providers"
+  ansible.builtin.copy:
+    src: "{{ item.local_path }}"
+    dest: "{{ keycloak.home }}/providers/{{ item.id }}.jar"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  become: true
+  loop: "{{ keycloak_providers }}"
+  when: item.local_path is defined
+
+- name: Ensure required folder structure for policies exists
+  ansible.builtin.file:
+    path: "{{ keycloak.home }}/data/{{ item | lower }}"
+    state: directory
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0750'
+  become: true
+  loop: "{{ keycloak_supported_policy_types }}"
+
+- name: "Install custom policies"
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ keycloak.home }}/data/{{ item.type | default(keycloak_supported_policy_types | first) | lower }}/{{ item.name }}"
+    owner: "{{ keycloak.service_user }}"
+    group: "{{ keycloak.service_group }}"
+    mode: '0640'
+  become: true
+  loop: "{{ keycloak_policies }}"
+  when: item.url is defined and item.url | length > 0
+  notify: "restart keycloak"

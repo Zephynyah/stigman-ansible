@@ -1,0 +1,11 @@
+---
+- name: Set up Keycloak
+  hosts: localhost
+  gather_facts: true
+  become: yes
+  become_method: sudo  
+  roles:
+    - keycloak
+  vars:
+    hostname: "eh-stigman-1"
+    admin_password: "Password123!"

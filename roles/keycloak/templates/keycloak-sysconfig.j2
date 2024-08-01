@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+{% if not ansible_local.keycloak.general.bootstrapped | default(false) | bool %}
+KEYCLOAK_ADMIN={{ keycloak_admin_user }}
+KEYCLOAK_ADMIN_PASSWORD='{{ keycloak_admin_pass }}'
+{% else %}
+{{ keycloak.bootstrap_mnemonic }}
+{% endif %}
+PATH={{ keycloak_java_home | default(keycloak_sys_pkg_java_home, true) }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+JAVA_HOME={{ keycloak_java_home | default(keycloak_sys_pkg_java_home, true) }}
+JAVA_OPTS={{ keycloak_java_opts }}
+
+# Custom ENV variables
+{% for env in keycloak_additional_env_vars %}
+{{ env.key }}={{ env.value }}
+{% endfor %}

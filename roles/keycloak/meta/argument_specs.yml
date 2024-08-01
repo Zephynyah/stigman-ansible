@@ -1,0 +1,513 @@
+argument_specs:
+    main:
+        options:
+            keycloak_version:
+                default: "24.0.4"
+                description: "keycloak.org package version"
+                type: "str"
+            keycloak_archive:
+                default: "keycloak-{{ keycloak_version }}.zip"
+                description: "keycloak install archive filename"
+                type: "str"
+            keycloak_download_url:
+                default: "https://github.com/keycloak/keycloak/releases/download/{{ keycloak_version }}/{{ keycloak_archive }}"
+                description: "Download URL for keycloak"
+                type: "str"
+            keycloak_installdir:
+                default: "{{ keycloak_dest }}/keycloak-{{ keycloak_version }}"
+                description: "Installation path"
+                type: "str"
+            keycloak_offline_install:
+                default: false
+                description: "Perform an offline install"
+                type: "bool"
+            keycloak_jvm_package:
+                default: "java-11-openjdk-headless"
+                description: "RHEL java package runtime"
+                type: "str"
+            keycloak_java_home:
+                description: "JAVA_HOME of installed JRE, leave empty for using specified keycloak_jvm_package RPM path"
+                type: "str"
+            keycloak_dest:
+                default: "/opt/keycloak"
+                description: "Installation root path"
+                type: "str"
+            keycloak_home:
+                default: "{{ keycloak_installdir }}"
+                description: "Installation work directory"
+                type: "str"
+            keycloak_config_dir:
+                default: "{{ keycloak_home }}/conf"
+                description: "Path for configuration"
+                type: "str"
+            keycloak_service_user:
+                default: "keycloak"
+                description: "Posix account username"
+                type: "str"
+            keycloak_service_group:
+                default: "keycloak"
+                description: "Posix account group"
+                type: "str"
+            keycloak_configure_firewalld:
+                default: false
+                description: "Ensure firewalld is running and configure keycloak ports"
+                type: "bool"
+            keycloak_configure_iptables:
+                default: false
+                description: "Ensure firewalld is running and configure keycloak ports"
+                type: "bool"
+            keycloak_service_restart_always:
+                default: false
+                description: "systemd restart always behavior of service; takes precedence over keycloak_service_restart_on_failure if true"
+                type: "bool"
+            keycloak_service_restart_on_failure:
+                default: false
+                description: "systemd restart on-failure behavior of service"
+                type: "bool"
+            keycloak_service_restartsec:
+                default: "10s"
+                description: "systemd RestartSec for service"
+                type: "str"
+            keycloak_admin_user:
+                default: "admin"
+                description: "Administration console user account"
+                type: "str"
+            keycloak_admin_pass:
+                required: true
+                description: "Password of console admin account"
+                type: "str"
+            keycloak_master_realm:
+                default: "master"
+                description: "Name for rest authentication realm"
+                type: "str"
+            keycloak_bind_address:
+                default: "0.0.0.0"
+                description: "Address for binding service ports"
+                type: "str"
+            keycloak_host:
+                default: "localhost"
+                description: "Hostname for the Keycloak server"
+                type: "str"
+            keycloak_port:
+                default: -1
+                description: "The port used by the proxy when exposing the hostname"
+                type: "int"
+            keycloak_path:
+                required: false
+                description: "This should be set if proxy uses a different context-path for Keycloak"
+                type: "str"
+            keycloak_http_enabled:
+                default: true
+                description: "Enable listener on HTTP port"
+                type: "bool"
+            keycloak_http_port:
+                default: 8080
+                description: "HTTP port"
+                type: "int"
+            keycloak_health_check_url_path:
+                default: "realms/master/.well-known/openid-configuration"
+                description: "Path to the health check endpoint; scheme, host and keycloak_http_relative_path will be prepended automatically"
+                type: "str"
+            keycloak_https_key_file_enabled:
+                default: false
+                description: "Enable configuration of HTTPS via files in PEM format"
+                type: "bool"
+            keycloak_key_file_copy_enabled:
+                default: false
+                description: "Enable copy of key file to target host"
+                type: "bool"
+            keycloak_key_content:
+                default: ""
+                description: "Content of the TLS private key"
+                type: "str"
+            keycloak_key_file:
+                default: "/etc/pki/tls/private/server.key.pem"
+                description: "The file path to a private key in PEM format"
+                type: "str"
+            keycloak_cert_file_copy_enabled:
+                default: false
+                description: "Enable copy of cert file to target host"
+                type: "bool"
+            keycloak_cert_file_src:
+                default: ""
+                description: "Set the source file path"
+                type: "str"
+            keycloak_cert_file:
+                default: "/etc/pki/tls/certs/server.crt.pem"
+                description: "The file path to a server certificate or certificate chain in PEM format"
+                type: "str"
+            keycloak_https_key_store_enabled:
+                default: false
+                description: "Enable configuration of HTTPS via a key store"
+                type: "bool"
+            keycloak_key_store_file:
+                default: ""
+                description: "Deprecated, use `keycloak_https_key_store_file` instead."
+                type: "str"
+            keycloak_key_store_password:
+                default: ""
+                description: "Deprecated, use `keycloak_https_key_store_password` instead."
+                type: "str"
+            keycloak_https_key_store_file:
+                default: "{{ keycloak.home }}/conf/key_store.p12"
+                description: "The file path to the key store"
+                type: "str"
+            keycloak_https_key_store_password:
+                default: ""
+                description: "Password for the key store"
+                type: "str"
+            keycloak_https_trust_store_enabled:
+                default: false
+                description: "Enable configuration of the https trust store"
+                type: "bool"
+            keycloak_https_trust_store_file:
+                default: "{{ keycloak.home }}/conf/trust_store.p12"
+                description: "The file path to the trust store"
+                type: "str"
+            keycloak_https_trust_store_password:
+                default: ""
+                description: "Password for the trust store"
+                type: "str"
+            keycloak_config_key_store_file:
+                default: "{{ keycloak.home }}/conf/conf_store.p12"
+                description: "Path to the configuration key store; only used if `keycloak_keystore_password` is not empty"
+                type: "str"
+            keycloak_config_key_store_password:
+                default: ""
+                description: >
+                  Password of the configuration key store; if non-empty, `keycloak_db_pass` will be saved to the key store
+                  at `keycloak_config_key_store_file` (instead of being written to the configuration file in clear text)
+                type: "str"
+            keycloak_https_port:
+                default: 8443
+                description: "HTTPS port"
+                type: "int"
+            keycloak_ajp_port:
+                default: 8009
+                description: "AJP port"
+                type: "int"
+            keycloak_jgroups_port:
+                default: 7800
+                description: "jgroups cluster tcp port"
+                type: "int"
+            keycloak_java_heap_opts:
+                default: "-Xms1024m -Xmx2048m"
+                description: "Heap memory JVM setting"
+                type: "str"
+            keycloak_java_jvm_opts:
+                default: >
+                  -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.err.encoding=UTF-8
+                  -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/urandom -XX:+UseParallelGC
+                  -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:FlightRecorderOptions=stackdepth=512
+                description: "Other JVM settings"
+                type: "str"
+            keycloak_java_opts:
+                default: "{{ keycloak_java_heap_opts + ' ' + keycloak_java_jvm_opts }}"
+                description: "JVM arguments, by default heap_opts + jvm_opts, if overriden it takes precedence over them"
+                type: "str"
+            keycloak_additional_env_vars:
+                default: "[]"
+                description: "List of additional env variables of { key: str, value: str} to be put in sysconfig file"
+                type: "list"
+            keycloak_ha_enabled:
+                default: false
+                description: "Enable auto configuration for database backend, clustering and remote caches on infinispan"
+                type: "bool"
+            keycloak_ha_discovery:
+                default: "TCPPING"
+                description: "Discovery protocol for HA cluster members"
+                type: "str"
+            keycloak_db_enabled:
+                default: "{{ True if keycloak_ha_enabled else False }}"
+                description: "Enable auto configuration for database backend"
+                type: "str"
+            keycloak_http_relative_path:
+                required: false
+                default: /
+                description: "Set the path relative to / for serving resources. The path must start with a /"
+                type: "str"
+            keycloak_frontend_url:
+                required: false
+                description: "Service public URL"
+                type: "str"
+            keycloak_admin_url:
+                required: false
+                description: "Service URL for the admin console"
+                type: "str"
+            keycloak_metrics_enabled:
+                default: false
+                description: "Whether to enable metrics"
+                type: "bool"
+            keycloak_health_enabled:
+                default: true
+                description: "If the server should expose health check endpoints"
+                type: "bool"
+            keycloak_ispn_user:
+                default: "supervisor"
+                description: "Username for connecting to infinispan"
+                type: "str"
+            keycloak_ispn_pass:
+                default: "supervisor"
+                description: "Password for connecting to infinispan"
+                type: "str"
+            keycloak_ispn_hosts:
+                default: "localhost:11222"
+                description: "host name/port for connecting to infinispan, eg. host1:11222;host2:11222"
+                type: "str"
+            keycloak_ispn_sasl_mechanism:
+                default: "SCRAM-SHA-512"
+                description: "Infinispan auth mechanism"
+                type: "str"
+            keycloak_ispn_use_ssl:
+                default: false
+                description: "Whether infinispan uses TLS connection"
+                type: "bool"
+            keycloak_ispn_trust_store_path:
+                default: "/etc/pki/java/cacerts"
+                description: "Path to infinispan server trust certificate"
+                type: "str"
+            keycloak_ispn_trust_store_password:
+                default: "changeit"
+                description: "Password for infinispan certificate keystore"
+                type: "str"
+            keycloak_jdbc_engine:
+                default: "postgres"
+                description: "Database engine [mariadb,postres,mssql]"
+                type: "str"
+            keycloak_db_user:
+                default: "keycloak-user"
+                description: "User for database connection"
+                type: "str"
+            keycloak_db_pass:
+                default: "keycloak-pass"
+                description: "Password for database connection"
+                type: "str"
+            keycloak_jdbc_url:
+                default: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].url }}"
+                description: "JDBC URL for connecting to database"
+                type: "str"
+            keycloak_jdbc_driver_version:
+                default: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].version }}"
+                description: "Version for JDBC driver"
+                type: "str"
+            keycloak_log:
+                default: "file"
+                type: "str"
+                description: "Enable one or more log handlers in a comma-separated list"
+            keycloak_log_level:
+                default: "info"
+                type: "str"
+                description: "The log level of the root category or a comma-separated list of individual categories and their levels"
+            keycloak_log_file:
+                default: "data/log/keycloak.log"
+                type: "str"
+                description: "Set the log file path and filename relative to keycloak home"
+            keycloak_log_format:
+                default: '%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n'
+                type: "str"
+                description: "Set a format specific to file log entries"
+            keycloak_log_target:
+                default: '/var/log/keycloak'
+                type: "str"
+                description: "Set the destination of the keycloak log folder link"
+            keycloak_log_max_file_size:
+                default: 10M
+                type: "str"
+                description: >
+                  Set the maximum log file size before a log rotation happens; A size configuration option recognises string in this format (shown as a regular
+                  expression): [0-9]+[KkMmGgTtPpEeZzYy]?. If no suffix is given, assume bytes.
+            keycloak_log_max_backup_index:
+                default: 10
+                type: "str"
+                description: "Set the maximum number of archived log files to keep"
+            keycloak_log_file_suffix:
+                default: '.yyyy-MM-dd.zip'
+                type: "str"
+                description: >
+                  Set the log file handler rotation file suffix. When used, the file will be rotated based on its suffix. Note: If the suffix ends
+                  with .zip or .gz, the rotation file will also be compressed.
+            keycloak_proxy_mode:
+                default: 'edge'
+                type: "str"
+                description: "The proxy address forwarding mode if the server is behind a reverse proxy. Set to 'none' if not using a proxy"
+            keycloak_proxy_headers:
+                default: ""
+                type: "str"
+                description: "Parse reverse proxy headers (`forwarded` or `xforwarded`), overrides the deprecated keycloak_proxy_mode argument"
+            keycloak_start_dev:
+                default: false
+                type: "bool"
+                description: "Whether to start the service in development mode (start-dev)"
+            keycloak_transaction_xa_enabled:
+                default: true
+                type: "bool"
+                description: "Enable or disable XA transactions which may not be supported by some DBMS"
+            keycloak_hostname_strict:
+                default: true
+                type: "bool"
+                description: >
+                  Disables dynamically resolving the hostname from request headers. Should always be set to true in production, unless
+                  proxy verifies the Host header.
+            keycloak_hostname_strict_backchannel:
+                default: false
+                type: "bool"
+                description: >
+                  By default backchannel URLs are dynamically resolved from request headers to allow internal and external applications. If all
+                  applications use the public URL this option should be enabled.
+            keycloak_spi_sticky_session_encoder_infinispan_should_attach_route:
+                default: true
+                type: "bool"
+                description: >
+                  If the route should be attached to cookies to reflect the node that owns a particular session. If false, route is not attached to cookies
+                  and we rely on the session affinity capabilities from reverse proxy
+            keycloak_hostname_strict_https:
+                type: "bool"
+                required: false
+                description: >
+                  By default, Keycloak requires running using TLS/HTTPS. If the service MUST run without TLS/HTTPS, then set
+                  this option to "true"
+            keycloak_ks_vault_enabled:
+                default: false
+                type: "bool"
+                description: "Whether to enable vault SPI"
+            keycloak_ks_vault_file:
+                default: "{{ keycloak_config_dir }}/keystore.p12"
+                type: "str"
+                description: "The keystore path for the vault SPI"
+            keycloak_ks_vault_type:
+                default: "PKCS12"
+                type: "str"
+                description: "Type of the keystore used for the vault SPI"
+            keycloak_ks_vault_pass:
+                required: false
+                type: "str"
+                description: "The password for accessing the keystore vault SPI"
+            keycloak_systemd_wait_for_port:
+                description: 'Whether systemd unit should wait for keycloak port before returning'
+                default: "{{ keycloak_ha_enabled }}"
+                type: "bool"
+            keycloak_systemd_wait_for_port_number:
+                default: "{{ keycloak_https_port }}"
+                description: "The port the systemd unit should wait for, by default the https port"
+                type: "int"
+            keycloak_systemd_wait_for_log:
+                description: 'Whether systemd unit should wait for service to be up in logs'
+                default: false
+                type: "bool"
+            keycloak_systemd_wait_for_timeout:
+                description: "How long to wait for service to be alive (seconds)"
+                default: 60
+                type: 'int'
+            keycloak_systemd_wait_for_delay:
+                description: "Activation delay for service systemd unit (seconds)"
+                default: 10
+                type: 'int'
+            keycloak_providers:
+                description: >
+                  List of provider definition dicts: { 'id': str, 'spi': str, 'url': str, 'local_path': str,
+                  'maven': {
+                    'repository_url': str, 'group_id': str, 'artifact_id': str, 'version': str, 'username': str, optional, 'password': str, optional
+                  },
+                  'default': bool,
+                  'properties': list of key/value }
+                default: []
+                type: "list"
+            keycloak_supported_policy_types:
+                description: "List of str of supported policy types"
+                default: ['password-blacklists']
+                type: "list"
+            keycloak_policies:
+                description: "List of policy definition dicts: { 'name': str, 'url': str, 'type': str }"
+                default: []
+                type: "list"
+            keycloak_jdbc_download_url:
+                description: "Override the default Maven Central download URL for the JDBC driver"
+                type: "str"
+            keycloak_jdbc_download_user:
+                description: "Set a username with which to authenticate when downloading JDBC drivers from an alternative location"
+                type: "str"
+            keycloak_jdbc_download_pass:
+                description: >
+                  Set a password with which to authenticate when downloading JDBC drivers from an alternative location
+                  (requires `keycloak_jdbc_download_user``)
+                type: "str"
+            keycloak_jdbc_download_validate_certs:
+                default: true
+                description: "Allow the option to ignore invalid certificates when downloading JDBC drivers from a custom URL"
+                type: "bool"
+            keycloak_restart_health_check:
+                default: true
+                description: "Whether to wait for successful health check after restart"
+                type: "bool"
+            keycloak_restart_strategy:
+                description: >
+                  Strategy task file for restarting in HA, one of restart/[ 'serial', 'none', 'serial_then_parallel' ].yml, or path to
+                  file when providing custom strategy; when keycloak_ha_enabled and keycloak_restart_health_check == true
+                default: "restart/serial.yml"
+                type: "str"
+            keycloak_restart_pause:
+                description: "Seconds to wait between restarts in HA strategy"
+                default: 15
+                type: int
+            keycloak_restart_health_check_delay:
+                description: "Seconds to let pass before starting healch checks"
+                default: 10
+                type: 'int'
+            keycloak_restart_health_check_reries:
+                description: "Number of attempts for successful health check before failing"
+                default: 25
+                type: 'int'
+    downstream:
+        options:
+            rhbk_version:
+                default: "24.0.3"
+                description: "Red Hat Build of Keycloak version"
+                type: "str"
+            rhbk_archive:
+                default: "rhbk-{{ rhbk_version }}.zip"
+                description: "Red Hat Build of Keycloak install archive filename"
+                type: "str"
+            rhbk_dest:
+                default: "/opt/rhbk"
+                description: "Root installation directory"
+                type: "str"
+            rhbk_installdir:
+                default: "{{ rhbk_dest }}/rhbk-{{ rhbk_version }}"
+                description: "Installation path for Red Hat Build of Keycloak"
+                type: "str"
+            rhbk_apply_patches:
+                default: false
+                description: "Install Red Hat Build of Keycloak most recent cumulative patch"
+                type: "bool"
+            rhbk_enable:
+                default: true
+                description: "Enable Red Hat Build of Keycloak installation"
+                type: "bool"
+            rhbk_offline_install:
+                default: false
+                description: "Perform an offline install"
+                type: "bool"
+            keycloak_show_deprecation_warnings:
+                default: true
+                description: "Whether deprecation warnings should be shown"
+                type: "bool"
+            rhbk_service_name:
+                default: "rhbk"
+                description: "systemd service name for Red Hat Build of Keycloak"
+                type: "str"
+            rhbk_service_desc:
+                default: "Red Hat Build of Keycloak"
+                description: "systemd description for Red Hat Build of Keycloak"
+                type: "str"
+            rhbk_patch_version:
+                required: false
+                description: "Red Hat Build of Keycloak latest cumulative patch version to apply; defaults to latest version when rhbk_apply_patches is True"
+                type: "str"
+            rhbk_patch_bundle:
+                default: "rhbk-{{ rhbk_patch_version | default('[0-9]+[.][0-9]+[.][0-9]+') }}-patch.zip"
+                description: "Red Hat Build of Keycloak patch archive filename"
+                type: "str"
+            rhbk_product_category:
+                default: "rhbk"
+                description: "JBossNetwork API category for Red Hat Build of Keycloak"
+                type: "str"

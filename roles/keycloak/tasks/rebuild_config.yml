@@ -1,0 +1,10 @@
+---
+# cf. https://www.keycloak.org/server/configuration#_optimize_the_keycloak_startup
+- name: "Rebuild {{ keycloak.service_name }} config"
+  ansible.builtin.shell: |
+    {{ keycloak.home }}/bin/kc.sh build
+  environment:
+    PATH: "{{ keycloak_java_home | default(keycloak_pkg_java_home, true) }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    JAVA_HOME: "{{ keycloak_java_home | default(keycloak_pkg_java_home, true) }}"
+  become: true
+  changed_when: true

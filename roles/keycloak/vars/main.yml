@@ -1,0 +1,18 @@
+---
+keycloak: # noqa var-naming this is an internal dict of interpolated values
+  home: "{{ keycloak_home }}"
+  config_dir: "{{ keycloak_config_dir }}"
+  bundle: "{{ keycloak_archive }}"
+  service_name: "keycloak"
+  health_url: "{{ 'https' if keycloak_http_enabled == False else 'http' }}://{{ keycloak_host }}:{{ keycloak_https_port if keycloak_http_enabled == False else keycloak_http_port }}{{ keycloak_http_relative_path }}{{ '/' \
+               if keycloak_http_relative_path | length > 1 else '' }}{{ keycloak_health_check_url_path | default('realms/master/.well-known/openid-configuration') }}"
+  cli_path: "{{ keycloak_home }}/bin/kcadm.sh"
+  service_user: "{{ keycloak_service_user }}"
+  service_group: "{{ keycloak_service_group }}"
+  offline_install: "{{ keycloak_offline_install }}"
+  config_key_store_enabled: "{{ keycloak_config_key_store_password != '' }}"
+  log:
+    file: "{{ keycloak_home }}/{{ keycloak_log_file }}"
+    level: "{{ keycloak_log_level }}"
+    format: "{{ keycloak_log_format }}"
+  bootstrap_mnemonic: "# ansible-middleware/keycloak: bootstrapped"

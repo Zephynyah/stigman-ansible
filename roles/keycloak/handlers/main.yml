@@ -1,0 +1,21 @@
+---
+# handler should be invoked anytime a [build configuration](https://www.keycloak.org/server/all-config?f=build) changes
+- name: "Rebuild {{ keycloak.service_name }} config"
+  ansible.builtin.include_tasks: rebuild_config.yml
+  listen: "rebuild keycloak config"
+
+- name: "Bootstrapped"
+  ansible.builtin.include_tasks: bootstrapped.yml
+  listen: bootstrapped
+
+- name: "Restart {{ keycloak.service_name }}"
+  ansible.builtin.include_tasks:
+    file: "{{ keycloak_restart_strategy if keycloak_ha_enabled else 'restart.yml' }}"
+  listen: "restart keycloak"
+
+- name: "Print deprecation warning"
+  ansible.builtin.fail:
+    msg: "Deprecation warning: you are using the deprecated variable '{{ deprecated_variable | d('NotSet') }}', check docs on how to upgrade."
+  failed_when: false
+  changed_when: true
+  listen: "print deprecation warning"
