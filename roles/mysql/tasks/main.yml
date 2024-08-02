@@ -1,0 +1,103 @@
+---
+#- meta: flush_handlers
+
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - mysql_user_name is defined
+      - mysql_database_name is defined
+      - mysql_data_dir is defined
+    quiet: true
+
+- name: Validate admin  password
+  ansible.builtin.assert:
+    that:
+      - mysql_user_password | length > 11
+    quiet: true
+    fail_msg: "The database password is empty or invalid. Please set the mysql_user_name to a 11+ char long string"
+    success_msg: "{{ 'Database user password OK' }}"
+
+- name: Ensure required packages are installed
+  ansible.builtin.include_tasks: fastpackages.yml
+  vars:
+    packages_list: "{{ mysql_prereq_package_list }}"
+
+- name: Install PyMySQL python package
+  ansible.builtin.pip:
+    name: PyMySQL
+
+- name: "start mysql"
+  ansible.builtin.systemd:
+    name: mysqld
+    state: started
+  become: true
+
+- name: Ensure mysql port is started
+  wait_for:
+    port: 3306
+    delay: 3
+    timeout: 300
+
+
+- name: creating STIG Manager mysql user
+  no_log: true
+  mysql_user:
+    name: "{{ mysql_user_name }}"
+    password: "{{ mysql_user_password }}"
+    priv: '*.*:ALL'
+    host: '%'
+    state: present    
+
+- name: creating Stigman DB
+  mysql_db:
+    name: "{{ mysql_database_name }}"
+    state: present   
+
+# https://serverfault.com/questions/1026554/how-to-do-mysql-secure-installation-via-ansible-playbook
+- name: Secure MySQL instalation
+  become: yes
+  expect:
+    command: mysql_secure_installation
+    responses:
+      'Enter current password for root': ''
+      'Set root password': 'n'
+      'Remove anonymous users': 'y'
+      'Disallow root login remotely': 'y'
+      'Remove test database': 'y'
+      'Reload privilege tables now': 'y'
+    timeout: 1
+  register: secure_mysqldb
+  failed_when: "'... Failed!' in secure_mysqldb.stdout_lines"
+  notify:
+    - restart mysql
+
+- name: Ensure mysql port is started
+  wait_for:
+    port: 3306
+    delay: 3
+    timeout: 300
+
+
+- name: Insert after regex, backup, and validate
+  blockinfile:
+    path: /etc/my.cnf
+    backup: yes
+    marker: ""
+    insertafter: '\[client-server\]'
+    block: |
+      #
+      # set options that affect server only
+      #
+      [mysql]
+      sort_buffer_size={{ mysql_sort_buffer_size }}
+      innodb_buffer_pool_size={{ mysql_innodb_buffer_pool_size }}
+  become: true
+
+
+#- name: enable verbose mode
+ # ini_file: dest=/etc/my.cnf section=mysql option=innodb_file_per_table  value=on backup=yes
+ # tags: configuration
+
+
+
+

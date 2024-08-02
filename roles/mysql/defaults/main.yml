@@ -1,5 +1,6 @@
 ---
-### Mysql configuration settings
+### Mysql settings
+mysql_hide_passwords: true
 
 # database name, this is a required variable
 mysql_database_name: stigman
@@ -10,9 +11,13 @@ mysql_user_name: stigman
 # user password, this is a required variable
 mysql_user_password: ''
 
+# database root user, this is a required variable
+mysql_root_username: root
+
 #
 mysql_data_dir: /var/lib/mysql
 
-### List prerequsite packages
-mysql_prereq_package_list:
-      - mysql-server
+
+### Mysql configuration settings
+mysql_sort_buffer_size: 64M
+mysql_innodb_buffer_pool_size: 2G

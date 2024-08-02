@@ -1,0 +1,54 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - mysql_user_name is defined
+      - mysql_database_name is defined
+      - mysql_data_dir is defined
+    quiet: true
+
+- name: Validate admin  password
+  ansible.builtin.assert:
+    that:
+      - mysql_user_password | length > 11
+    quiet: true
+    fail_msg: "The database password is empty or invalid. Please set the mysql_user_name to a 11+ char long string"
+    success_msg: "{{ 'Database user password OK' }}"
+
+- name: Ensure required packages are installed
+  ansible.builtin.include_tasks: fastpackages.yml
+  vars:
+    packages_list: "{{ mysql_prereq_package_list }}"
+  notify:
+     - start mysql
+
+- name: creating STIG Manager mysql user
+  ansible.builtin.mysql_user:
+    name: "{{ mysql_user_name }}"
+    password: "{{ mysql_user_password }}"
+    priv: '*.*:ALL'
+    host: '%'
+    state: present    
+
+- name: creating Stigman DB
+  ansible.builtin.mysql_db:
+    name: "{{ mysql_database_name }}"
+    state: present    
+
+# - name: Set root password for MySQL
+#   ansible.builtin.mysql_user:
+#     name: root
+#     password: "mysql_password"
+#     host: localhost
+#     login_unix_socket: true
+#     state: present
+
+
+# - name: Enable remote login to mysql
+#   lineinfile:
+#       path: /etc/mysql/mysql.conf.d/mysqld.cnf
+#       regexp: '^bind-address'
+#       line: 'bind-address = 0.0.0.0'
+#       backup: yes
+#   notify:
+#       - restart mysql

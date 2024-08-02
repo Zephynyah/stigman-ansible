@@ -1,0 +1,3 @@
+---
+### List prerequsite packages
+mysql_prereq_package_list: [ mysql-server ]

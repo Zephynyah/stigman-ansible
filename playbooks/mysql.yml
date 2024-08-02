@@ -1,0 +1,13 @@
+---
+- name: Set up MySQL
+  hosts: localhost
+  gather_facts: true
+  become: yes
+  become_method: sudo  
+  roles:
+    - mysql
+  vars:
+    # mysql_user_name:
+    # mysql_database_name:
+    # mysql_data_dir:
+    mysql_user_password: "Password123!"
