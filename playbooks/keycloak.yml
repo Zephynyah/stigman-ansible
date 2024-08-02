@@ -5,7 +5,13 @@
   become: yes
   become_method: sudo  
   roles:
-    - keycloak
+    #- keycloak
+    - keycloak_realm
   vars:
-    hostname: "eh-stigman-1"
-    admin_password: "Password123!"
+    keycloak_hostname_backchannel_dynamic: true
+    keycloak_hostname_strict: false
+    keycloak_hostname_strict_https: false
+
+    keycloak_admin_pass: "Password123!"
+    keycloak_admin_password: "Password123!"
+    keycloak_offline_install: true

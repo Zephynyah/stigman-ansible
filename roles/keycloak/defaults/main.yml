@@ -1,4 +1,7 @@
 ---
+## Manual download
+# curl -OL https://github.com/keycloak/keycloak/releases/download/24.0.4/keycloak-24.0.4.tar.gz
+
 ### Configuration specific to keycloak
 keycloak_pkg: tar.gz
 keycloak_version: 24.0.4
@@ -19,10 +22,11 @@ keycloak_config_dir: "{{ keycloak_home }}/conf"
 keycloak_start_dev: false
 keycloak_service_user: keycloak
 keycloak_service_group: keycloak
-keycloak_service_restart_always: false
-keycloak_service_restart_on_failure: false
-keycloak_service_restartsec: "10s"
+keycloak_service_restart_always: true
+keycloak_service_restart_on_failure: true
+keycloak_service_restartsec: "30s"
 
+###
 keycloak_configure_firewalld: false
 keycloak_configure_iptables: false
 
@@ -48,6 +52,12 @@ keycloak_java_jvm_opts: "-XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Dfile.
   -XX:AdaptiveSizePolicyWeight=90 -XX:FlightRecorderOptions=stackdepth=512"
 keycloak_java_opts: "{{ keycloak_java_heap_opts + ' ' + keycloak_java_jvm_opts }}"
 keycloak_additional_env_vars: []
+
+### NEW
+keycloak_hostname: localhost
+keycloak_hostname_admin:
+keycloak_hostname_backchannel_dynamic: true
+keycloak_hostname_strict_https: false
 
 ### TLS/HTTPS configuration
 keycloak_https_key_file_enabled: false
@@ -94,7 +104,8 @@ keycloak_http_relative_path: /
 
 # Disables dynamically resolving the hostname from request headers.
 # Should always be set to true in production, unless proxy verifies the Host header.
-keycloak_hostname_strict: true
+keycloak_hostname_strict: false
+
 # By default backchannel URLs are dynamically resolved from request headers to allow internal and external applications.
 # If all applications use the public URL this option should be enabled.
 keycloak_hostname_strict_backchannel: false

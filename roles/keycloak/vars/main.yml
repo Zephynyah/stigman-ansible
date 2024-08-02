@@ -4,7 +4,7 @@ keycloak: # noqa var-naming this is an internal dict of interpolated values
   config_dir: "{{ keycloak_config_dir }}"
   bundle: "{{ keycloak_archive }}"
   service_name: "keycloak"
-  health_url: "{{ 'https' if keycloak_http_enabled == False else 'http' }}://{{ keycloak_host }}:{{ keycloak_https_port if keycloak_http_enabled == False else keycloak_http_port }}{{ keycloak_http_relative_path }}{{ '/' \
+  health_url: "{{ 'https' if keycloak_http_enabled == False else 'http' }}://{{ keycloak_hostname }}:{{ keycloak_https_port if keycloak_http_enabled == False else keycloak_http_port }}{{ keycloak_http_relative_path }}{{ '/' \
                if keycloak_http_relative_path | length > 1 else '' }}{{ keycloak_health_check_url_path | default('realms/master/.well-known/openid-configuration') }}"
   cli_path: "{{ keycloak_home }}/bin/kcadm.sh"
   service_user: "{{ keycloak_service_user }}"

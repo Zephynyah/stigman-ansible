@@ -17,6 +17,15 @@ hostname-strict-https=true
 hostname-strict-https=false
 {% endif -%}
 
+
+{% if keycloak_hostname_backchannel_dynamic is defined and keycloak_hostname_backchannel_dynamic is sameas true -%}
+hostname-backchannel-dynamic=true
+{% endif -%}
+{% if keycloak_hostname_backchannel_dynamic is defined and keycloak_hostname_backchannel_dynamic is sameas false -%}
+hostname-backchannel-dynamic=false
+{% endif -%}
+
+
 {% if keycloak.config_key_store_enabled %}
 # Config store
 config-keystore={{ keycloak_config_key_store_file }}
@@ -39,10 +48,12 @@ https-port={{ keycloak_https_port }}
 https-certificate-file={{ keycloak_cert_file}}
 https-certificate-key-file={{ keycloak_key_file }}
 {% endif %}
+
 {% if keycloak_https_key_store_enabled %}
 https-key-store-file={{ keycloak_https_key_store_file }}
 https-key-store-password={{ keycloak_https_key_store_password }}
 {% endif %}
+
 {% if keycloak_https_trust_store_enabled %}
 https-trust-store-file={{ keycloak_https_trust_store_file }}
 https-trust-store-password={{ keycloak_https_trust_store_password }}
@@ -50,15 +61,16 @@ https-trust-store-password={{ keycloak_https_trust_store_password }}
 
 # Client URL configuration
 {% if keycloak_frontend_url %}
-hostname-url={{ keycloak_frontend_url }}
+# hostname-url={{ keycloak_frontend_url }}
 {% else %}
-hostname={{ keycloak_host }}
-hostname-port={{ keycloak_port }}
-hostname-path={{ keycloak_path }}
+# hostname={{ keycloak_hostname }} 
+# hostname-port={{ keycloak_port }}
+# hostname-path={{ keycloak_path }}
 {% endif %}
-hostname-admin-url={{ keycloak_admin_url }}
+
+#hostname-admin-url={{ keycloak_admin_url }}
 hostname-strict={{ keycloak_hostname_strict | lower }}
-hostname-strict-backchannel={{ keycloak_hostname_strict_backchannel | lower }}
+#hostname-strict-backchannel={{ keycloak_hostname_strict_backchannel | lower }}
 
 # Cluster
 {% if keycloak_ha_enabled %}
@@ -73,7 +85,7 @@ cache-config-file=cache-ispn.xml
 proxy-headers={{ keycloak_proxy_headers | lower }}
 {% elif keycloak_proxy_mode is defined and keycloak_proxy_mode != "none" %}
 # Deprecated Proxy configuration
-proxy={{ keycloak_proxy_mode }}
+#proxy={{ keycloak_proxy_mode }}
 {% endif %}
 
 spi-sticky-session-encoder-infinispan-should-attach-route={{ keycloak_spi_sticky_session_encoder_infinispan_should_attach_route | d(true) | lower }}

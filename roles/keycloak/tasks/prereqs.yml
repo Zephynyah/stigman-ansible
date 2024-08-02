@@ -2,7 +2,7 @@
 - name: Validate admin console password
   ansible.builtin.assert:
     that:
-      - keycloak_admin_pass | length > 12
+      - keycloak_admin_pass | length > 11
     quiet: true
     fail_msg: "The console administrator password is empty or invalid. Please set the keycloak_admin_pass to a 12+ char long string"
     success_msg: "{{ 'Console administrator password OK' }}"
@@ -100,3 +100,9 @@
       - keycloak_proxy_headers | lower in ['', 'forwarded', 'xforwarded']
     quiet: true
     fail_msg: "keycloak_proxy_headers must be either '', 'forwarded' or 'xforwarded'"
+
+- name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes

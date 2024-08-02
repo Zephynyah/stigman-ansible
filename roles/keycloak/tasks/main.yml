@@ -86,7 +86,7 @@
   become: true
 
 - name: Check service status
-  ansible.builtin.systemd_service:
+  ansible.builtin.systemd:
     name: "{{ keycloak.service_name }}"
   register: keycloak_service_status
   changed_when: false
