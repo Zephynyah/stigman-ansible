@@ -1,0 +1,57 @@
+---
+- name: Run all STIG Manager Playbooks
+  hosts: localhost
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  vars_prompt:
+    - name: admin_pass
+      prompt: Enter the Password
+
+  tasks:
+    - name: Include MySQL
+      include_role:
+        name: mysql
+      vars:
+        # mysql_user_name: stigman
+        # mysql_database_name: stigman
+        # mysql_data_dir:
+        mysql_user_password: "{{ admin_pass }}"
+
+    - name: Include Keycloak
+      include_role:
+        name: keycloak
+      vars:
+        keycloak_hostname_backchannel_dynamic: true
+        keycloak_hostname_strict: false
+        keycloak_hostname_strict_https: false
+
+        keycloak_admin_pass: "{{ admin_pass }}"
+        keycloak_admin_password: "{{ admin_pass }}"
+        keycloak_offline_install: false
+
+    - name: Include keycloak role
+      include_role:
+        name: keycloak_realm
+      vars:
+        keycloak_admin_pass: "{{ admin_pass }}"
+        keycloak_admin_password: "{{ admin_pass }}"
+        keycloak_realm: stigman
+
+    - name: Include STIG Manager 
+      include_role:
+        name: stig-manager
+      vars:
+        stigman_classification: U
+        stigman_oidc_provider: http://localhost:8080/realms/stigman
+        stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+
+        # DB
+        stigman_db_user: stigman
+        stigman_db_password: "{{ admin_pass }}"
+
+        # Customize 
+        # stigman_client_welcome_image:
+        # stigman_client_welcome_link:
+        # stigman_client_welcome_message:
+        # stigman_client_welcome_title:

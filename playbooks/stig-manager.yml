@@ -1,11 +1,24 @@
 ---
-- name: Set up Keycloak
+- name: Set up STIG Manager server
   hosts: localhost
   gather_facts: true
   become: yes
   become_method: sudo  
   roles:
-    - keycloak
+    - stig-manager
   vars:
-    hostname: "eh-stigman-1"
-    admin_password: "Password123!"
+    stigman_classification: U
+    stigman_oidc_provider: http://localhost:8080/realms/stigman
+    stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+
+    # DB
+    stigman_db_user: stigman
+    stigman_db_password: "Password123!"
+
+    # Customize 
+    # stigman_client_welcome_image:
+    # stigman_client_welcome_link:
+    # stigman_client_welcome_message:
+    # stigman_client_welcome_title:
+
+

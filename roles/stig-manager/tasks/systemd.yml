@@ -1,0 +1,25 @@
+---
+
+- name: "Configure systemd unit file for stigman service"
+  ansible.builtin.template:
+    src: stigman.service.j2
+    dest: /etc/systemd/system/stigman.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  register: systemdunit
+  notify:
+    - restart stigman
+
+
+- name: "Configure sysconfig file for {{ stigman.service_name }} service"
+  become: true
+  ansible.builtin.template:
+    src: stig-manager.sh.j2
+    dest: "{{ stigman_config_file }}"
+    owner: root
+    group: root
+    mode: '0755'
+  notify:
+    - restart stigman

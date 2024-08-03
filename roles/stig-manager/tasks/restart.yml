@@ -1,0 +1,10 @@
+---
+- name: "Restart and enable {{ stigman.service_name }} service"
+  ansible.builtin.systemd:
+    name: "{{ stigman.service_name }}"
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  become: true
+
+

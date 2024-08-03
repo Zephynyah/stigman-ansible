@@ -13,7 +13,7 @@ keycloak_auth_client: admin-cli
 keycloak_context: /
 
 # administrator console password, this is a required variable
-keycloak_admin_password: ''
+keycloak_admin_pass: ''
 
 ### Keycloak realms, clients, roles, federation
 # list of clients to create in the realm

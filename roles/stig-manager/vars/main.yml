@@ -1,0 +1,11 @@
+---
+stigman: # noqa var-naming this is an internal dict of interpolated values
+  home: "{{ stigman_home }}"
+  bundle: "{{ stigman_archive }}"
+  config_file: "{{ stigman_config_file }}"
+  service_name: "stigman"
+  service_user: "{{ stigman_service_user }}"
+  service_group: "{{ stigman_service_group }}"
+  offline_install: "{{ stigman_offline_install }}"
+  log:
+    file: "{{ stigman_home }}/logs/{{ stigman_log_file }}"

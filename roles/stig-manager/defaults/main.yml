@@ -1,0 +1,74 @@
+---
+## Manual download
+# curl -OL https://github.com/NUWCDIVNPT/stig-manager/releases/download/1.4.13/stig-manager-linux-1.4.13.tar.xz
+
+### Configuration specific to keycloak
+stigman_pkg: tar.xz
+stigman_version: 1.4.12
+stigman_archive: "stig-manager-linux-{{ stigman_version }}.{{ stigman_pkg }}"
+stigman_download_url: "https://github.com/NUWCDIVNPT/stig-manager/releases/download/{{ stigman_version }}/{{ stigman_archive }}"
+stigman_installdir: "{{ stigman_dest }}/stig-manager-{{ stigman_version }}"
+
+# whether to install from local archive
+stigman_offline_install: false
+
+### Install location and service settings
+stigman_dest: /opt
+stigman_home: "{{ stigman_installdir }}"
+stigman_service_user: stigman
+stigman_service_group: stigman
+stigman_service_restart_always: true
+stigman_service_restart_on_failure: true
+stigman_service_restartsec: "30s"
+stigman_log_file: "stigman.log"
+stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
+
+### Required Configuration
+
+#
+stigman_classification: U
+stigman_oidc_provider: http://localhost:8080/realms/stigman
+stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+
+# DB
+stigman_db_user: stigman
+stigman_db_password: ''
+
+### Using Default Configuration
+# stigman_api_address:
+# stigman_api_max_json_body:
+# stigman_api_max_upload:
+# stigman_api_port:
+# stigman_client_api_base:
+# stigman_client_directory:
+# stigman_client_disabled:
+# stigman_client_extra_scopes:
+# stigman_client_id:
+# stigman_client_scope_prefix:
+# stigman_client_refresh_disabled:
+# stigman_client_welcome_image:
+# stigman_client_welcome_link:
+# stigman_client_welcome_message:
+# stigman_client_welcome_title:
+# stigman_db_host:
+# stigman_db_max_connections:
+# stigman_db_port:
+# stigman_db_schema:
+# stigman_db_tls_ca_file:
+# stigman_db_tls_cert_file:
+# stigman_db_tls_key_file:
+# stigman_docs_directory:
+# stigman_docs_disabled:
+# stigman_log_level:
+# stigman_log_mode:
+# stigman_jwt_email_claim:
+# stigman_jwt_name_claim:
+# stigman_jwt_privileges_claim:
+# stigman_jwt_scope_claim:
+# stigman_jwt_servicename_claim:
+# stigman_jwt_username_claim:
+# stigman_swagger_enabled:
+# stigman_swagger_oidc_provider:
+# stigman_swagger_redirect:
+# stigman_swagger_server:
+

@@ -5,7 +5,7 @@
   become: yes
   become_method: sudo  
   roles:
-    #- keycloak
+    - keycloak
     - keycloak_realm
   vars:
     keycloak_hostname_backchannel_dynamic: true

@@ -1,0 +1,4 @@
+---
+- name: "Restart {{ stigman.service_name }}"
+  ansible.builtin.include_tasks: restart.yml
+  listen: "restart stigman"
