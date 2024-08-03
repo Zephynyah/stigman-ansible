@@ -1,9 +1,9 @@
 ---
-- name: Remove sysconfig file for {{ keycloak.service_name }}
-  become: true
-  ansible.builtin.file:
-    path: "{{ keycloak_sysconf_file }}"
-    state: absent
+# - name: Remove sysconfig file for {{ keycloak.service_name }}
+#   become: true
+#   ansible.builtin.file:
+#     path: "{{ keycloak_sysconf_file }}"
+#     state: absent
 
 - name: "Configure sysconfig file for {{ keycloak.service_name }} service"
   become: true

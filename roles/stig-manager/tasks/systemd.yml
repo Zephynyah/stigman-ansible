@@ -18,8 +18,8 @@
   ansible.builtin.template:
     src: stig-manager.sh.j2
     dest: "{{ stigman_config_file }}"
-    owner: root
-    group: root
+    owner: stigman
+    group: stigman
     mode: '0755'
   notify:
     - restart stigman

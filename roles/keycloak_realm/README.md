@@ -32,7 +32,7 @@ The following are a set of _required_ variables for the role:
 | Variable | Description |
 |:---------|:------------|
 |`keycloak_realm` | Name of the realm to be created |
-|`keycloak_admin_password`| Password for the administration console user account |
+|`keycloak_admin_pass`| Password for the administration console user account |
 
 
 The following variables are available for creating clients:
@@ -121,7 +121,7 @@ The following is an example playbook that makes use of the role to create a real
           include_role:
             name: keycloak_realm
           vars:
-            keycloak_admin_password: "changeme"
+            keycloak_admin_pass: "changeme"
             keycloak_realm: TestRealm
             keycloak_clients: [...]
 ```

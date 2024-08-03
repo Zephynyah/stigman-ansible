@@ -4,20 +4,26 @@ Description=STIG Manager Server
 After=network.target
 
 [Service]
+Type=simple
+LimitNOFILE=102642
+AmbientCapabilities=CAP_SYS_ADMIN
+#AmbientCapabilities=CAP_NET_BIND_SERVICE
+
 #WorkingDirectory=/opt/stig-manager # todo: sysmlink
 WorkingDirectory={{ stigman.home }}
 ExecStart=/bin/bash -c "./stig-manager.sh"
-User={{ stigman.service_user }}
-Group={{ stigman.service_group }}
-#SuccessExitStatus=0 143
+#User={{ stigman.service_user }}
+#Group={{ stigman.service_group }}
+
 {% if stigman_service_restart_always %}
 Restart=always
 {% elif stigman_service_restart_on_failure %}
 Restart=on-failure
 {% endif %}
 RestartSec={{ stigman_service_restartsec }}
-AmbientCapabilities=CAP_SYS_ADMIN
-AmbientCapabilities=CAP_NET_BIND_SERVICE
+SuccessExitStatus=0
+TimeoutStartSec=60s
+TimeoutStopSec=60s
 
 [Install]
 WantedBy=multi-user.target

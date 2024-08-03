@@ -66,7 +66,7 @@ argument_specs:
                 default: "[]"
                 description: "List of user federations to configure in the realm"
                 type: "list"
-            keycloak_admin_password:
+            keycloak_admin_pass:
                 # line 5 of keycloak_realm/vars/main.yml
                 required: true
                 description: "Password for the administration console user account"

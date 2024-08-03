@@ -4,9 +4,9 @@
   gather_facts: true
   become: yes
   become_method: sudo
-  vars_prompt:
-    - name: admin_pass
-      prompt: Enter the Password
+  #vars_prompt:
+    #- name: admin_pass
+      #prompt: Enter the Password
 
   tasks:
     - name: Include MySQL
@@ -16,27 +16,24 @@
         # mysql_user_name: stigman
         # mysql_database_name: stigman
         # mysql_data_dir:
-        mysql_user_password: "{{ admin_pass }}"
+        mysql_user_password: "Password123!"
 
     - name: Include Keycloak
       include_role:
         name: keycloak
       vars:
+        keycloak_admin_pass: "Password123!"
+        keycloak_offline_install: false
         keycloak_hostname_backchannel_dynamic: true
         keycloak_hostname_strict: false
         keycloak_hostname_strict_https: false
-
-        keycloak_admin_pass: "{{ admin_pass }}"
-        keycloak_admin_password: "{{ admin_pass }}"
-        keycloak_offline_install: false
 
     - name: Include keycloak role
       include_role:
         name: keycloak_realm
       vars:
-        keycloak_admin_pass: "{{ admin_pass }}"
-        keycloak_admin_password: "{{ admin_pass }}"
-        keycloak_realm: stigman
+        keycloak_admin_pass: "Password123!"
+        keycloak_offline_install: true
 
     - name: Include STIG Manager 
       include_role:
@@ -48,7 +45,7 @@
 
         # DB
         stigman_db_user: stigman
-        stigman_db_password: "{{ admin_pass }}"
+        stigman_db_password: "Password123!"
 
         # Customize 
         # stigman_client_welcome_image:
