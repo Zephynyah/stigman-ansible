@@ -39,7 +39,9 @@
     - always
 
 - name: Ensure required packages are installed
-  ansible.builtin.include_tasks: fastpackages.yml
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: fastpackages
   vars:
     packages_list: "{{ keycloak_prereq_package_list }}"
 

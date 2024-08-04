@@ -17,7 +17,10 @@ mysql_root_username: root
 #
 mysql_data_dir: /var/lib/mysql
 
-
 ### Mysql configuration settings
 mysql_sort_buffer_size: 64M
 mysql_innodb_buffer_pool_size: 2G
+
+### List prerequsite packages
+mysql_prereq_package_list: [ mysql-server ]
+

@@ -73,7 +73,7 @@
     - archive_path.stat is defined
     - not archive_path.stat.exists
     - not stigman.offline_install
-
+    
 - name: Check downloaded archive
   ansible.builtin.stat:
     path: "{{ local_path.stat.path }}/{{ stigman.bundle }}"
@@ -126,5 +126,10 @@
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
-  tags:
-    - systemd
+
+#- name: Include restart tasks
+#  ansible.builtin.include_tasks: restart.yml
+ 
+
+
+

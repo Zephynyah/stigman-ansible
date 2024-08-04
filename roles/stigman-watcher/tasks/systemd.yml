@@ -1,0 +1,25 @@
+---
+
+- name: "Configure systemd unit file for watcher service"
+  ansible.builtin.template:
+    src: watcher.service.j2
+    dest: /etc/systemd/system/watcher.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  register: systemdunit
+  notify:
+    - restart watcher
+
+
+- name: "Configure sysconfig file for {{ watcher.service_name }} service"
+  become: true
+  ansible.builtin.template:
+    src: dotenv-example.j2
+    dest: "{{ watcher.config_file }}"
+    owner: stigman
+    group: stigman
+    mode: '0755'
+  notify:
+    - restart watcher

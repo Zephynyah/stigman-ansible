@@ -1,7 +1,7 @@
 ---
 - name: Restart and enable service
   ansible.builtin.systemd:
-    name: "{{ stigman.service_name }}"
+    name: "{{ watcher.service_name }}"
     enabled: true
     state: restarted
     daemon_reload: true
@@ -9,9 +9,9 @@
 
 - name: Wait until service becomes active
   ansible.builtin.uri:
-    url: "{{ stigman.health_url }}"
-  register: stigman_status
-  until: stigman_status.status == 200
+    url: "{{ watcher.health_url }}"
+  register: stigman_watcher_status
+  until: stigman_watcher_status.status == 200
   retries: 5
   delay: 3
   when: internal_force_health_check | default(true)

@@ -1,0 +1,137 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - watcher.home is defined
+      - stigman_watcher_service_user is defined
+      - stigman_watcher_dest is defined
+      - stigman_watcher_archive is defined
+      - stigman_watcher_download_url is defined
+      - stigman_watcher_pkg is defined
+      - stigman_watcher_version is defined
+      - stigman_watcher_auth_strategy in ["client_id", "client_key"]
+    quiet: true
+
+- name: Check for an existing deployment
+  become: true
+  ansible.builtin.stat:
+    path: "{{ watcher.home }}"
+  register: existing_deploy
+
+- name: "Create {{ watcher.service_name }} service user/group"
+  become: true
+  ansible.builtin.user:
+    name: "{{ watcher.service_user }}"
+    home: "{{ stigman_watcher_installdir }}"
+    system: true
+    create_home: false
+
+- name: "Create {{ watcher.service_name }} install location"
+  become: true
+  ansible.builtin.file:
+    dest: "{{ stigman_watcher_installdir }}"
+    state: directory
+    owner: "{{ watcher.service_user }}"
+    group: "{{ watcher.service_group }}"
+    mode: '0750'
+
+- name: Create directory for ansible custom facts
+  become: true
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: /etc/ansible/facts.d
+
+## check remote archive
+- name: Set download archive path
+  ansible.builtin.set_fact:
+    archive: "{{ stigman_watcher_dest }}/{{ watcher.bundle }}"
+
+- name: Check download archive path
+  become: true
+  ansible.builtin.stat:
+    path: "{{ archive }}"
+  register: archive_path
+
+## download to controller
+- name: Check local download archive path
+  ansible.builtin.stat:
+    path: "{{ lookup('env', 'PWD') }}"
+  register: local_path
+  delegate_to: localhost
+  run_once: true
+  become: false
+
+- name: Download stigman watcher archive
+  ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
+    url: "{{ stigman_watcher_download_url }}"
+    dest: "{{ local_path.stat.path }}/{{ watcher.bundle }}"
+    mode: '0640'
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - archive_path is defined
+    - archive_path.stat is defined
+    - not archive_path.stat.exists
+    - not watcher.offline_install
+    
+- name: Check downloaded archive
+  ansible.builtin.stat:
+    path: "{{ local_path.stat.path }}/{{ watcher.bundle }}"
+  register: local_archive_path
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+## copy and unpack
+- name: Copy archive to target nodes
+  ansible.builtin.copy:
+    src: "{{ local_path.stat.path }}/{{ watcher.bundle }}"
+    dest: "{{ archive }}"
+    owner: "{{ watcher.service_user }}"
+    group: "{{ watcher.service_group }}"
+    mode: '0640'
+  register: new_version_downloaded
+  when:
+    - not archive_path.stat.exists
+    - local_archive_path.stat is defined
+    - local_archive_path.stat.exists
+  become: true
+
+- name: "Check target directory for: {{ watcher.home }}/stig-manager-linuxstatic/"
+  ansible.builtin.stat:
+    path: "{{ watcher.home }}/stig-manager-linuxstatic"
+  register: path_to_linuxstatic
+  become: true
+
+- name: "Extract stigman watcher archive on target" # noqa no-handler need to run this here
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ archive }}"
+    dest: "{{ stigman_watcher_installdir }}"
+    creates: "{{ watcher.home }}/logs/"
+    owner: "{{ watcher.service_user }}"
+    group: "{{ watcher.service_group }}"
+    extra_opts:
+      - --strip-components=1
+  become: true
+  when:
+    - (not path_to_linuxstatic.stat.exists) or new_version_downloaded.changed
+ 
+
+- name: Inform decompression was not executed
+  ansible.builtin.debug:
+    msg: "{{ watcher.home }} already exists and version unchanged, skipping decompression"
+  when:
+    - (not new_version_downloaded.changed) and path_to_linuxstatic.stat.exists
+
+- name: Include systemd tasks
+  ansible.builtin.include_tasks: systemd.yml
+
+#- name: Include restart tasks
+#  ansible.builtin.include_tasks: restart.yml
+ 
+
+
+

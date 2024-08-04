@@ -1,5 +1,4 @@
 ---
-
 - name: "Configure systemd unit file for stigman service"
   ansible.builtin.template:
     src: stigman.service.j2

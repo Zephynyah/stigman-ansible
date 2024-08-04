@@ -24,22 +24,22 @@
         "root": "/dev/mapper/rhel-root"
     },
     "ansible_date_time": {
-        "date": "2024-08-02",
-        "day": "02",
-        "epoch": "1722654914",
-        "hour": "23",
-        "iso8601": "2024-08-03T03:15:14Z",
-        "iso8601_basic": "20240802T231514696428",
-        "iso8601_basic_short": "20240802T231514",
-        "iso8601_micro": "2024-08-03T03:15:14.696428Z",
-        "minute": "15",
+        "date": "2024-08-04",
+        "day": "04",
+        "epoch": "1722793308",
+        "hour": "13",
+        "iso8601": "2024-08-04T17:41:48Z",
+        "iso8601_basic": "20240804T134148144365",
+        "iso8601_basic_short": "20240804T134148",
+        "iso8601_micro": "2024-08-04T17:41:48.144365Z",
+        "minute": "41",
         "month": "08",
-        "second": "14",
-        "time": "23:15:14",
+        "second": "48",
+        "time": "13:41:48",
         "tz": "EDT",
         "tz_offset": "-0400",
-        "weekday": "Friday",
-        "weekday_number": "5",
+        "weekday": "Sunday",
+        "weekday_number": "0",
         "weeknumber": "31",
         "year": "2024"
     },
@@ -418,8 +418,8 @@
     "ansible_hostname": "eh-stigman-1",
     "ansible_hostnqn": "nqn.2014-08.org.nvmexpress:uuid:2d914d56-82d8-e9c2-1c55-78b357adc024",
     "ansible_interfaces": [
-        "ens160",
         "virbr0",
+        "ens160",
         "lo"
     ],
     "ansible_is_chroot": false,
@@ -547,39 +547,39 @@
     },
     "ansible_machine": "x86_64",
     "ansible_machine_id": "f549a2b866d642c5b2fb4e9d2a412c92",
-    "ansible_memfree_mb": 1344,
+    "ansible_memfree_mb": 165,
     "ansible_memory_mb": {
         "nocache": {
-            "free": 3190,
-            "used": 1018
+            "free": 1974,
+            "used": 2234
         },
         "real": {
-            "free": 1344,
+            "free": 165,
             "total": 4208,
-            "used": 2864
+            "used": 4043
         },
         "swap": {
-            "cached": 2,
-            "free": 4442,
+            "cached": 4,
+            "free": 4493,
             "total": 4531,
-            "used": 89
+            "used": 38
         }
     },
     "ansible_memtotal_mb": 4208,
     "ansible_mounts": [
         {
-            "block_available": 9502036,
+            "block_available": 9480772,
             "block_size": 4096,
             "block_total": 11678135,
-            "block_used": 2176099,
+            "block_used": 2197363,
             "device": "/dev/mapper/rhel-root",
             "fstype": "xfs",
-            "inode_available": 23221619,
+            "inode_available": 23221585,
             "inode_total": 23367680,
-            "inode_used": 146061,
+            "inode_used": 146095,
             "mount": "/",
             "options": "rw,seclabel,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota",
-            "size_available": 38920339456,
+            "size_available": 38833242112,
             "size_total": 47833640960,
             "uuid": "acf62471-2be0-461f-b896-4acd1d3d4524"
         },
@@ -666,13 +666,13 @@
     "ansible_ssh_host_key_ecdsa_public": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBOXsoP+rCmHHyeQ3tNOYQ58GxHF10xnmnWFAq9zXBW9ERVuJ0LRH5NuFIGPaTZrhRqOWd1foSMbQX3J5zjnluEY=",
     "ansible_ssh_host_key_ed25519_public": "AAAAC3NzaC1lZDI1NTE5AAAAIAbphRMJZYkjHvgHzG+oQ/Bh9PMNGPexFk2UkCKbJfIG",
     "ansible_ssh_host_key_rsa_public": "AAAAB3NzaC1yc2EAAAADAQABAAABgQDg+uO4SAYpqeVf73HuX+iEnVR7ghG7H0dbEhroqbe40+V+cUKFuVqFMqCjqG4C4lPE5oza87nW58WOp4oxGx0rgmA5Zgk/igQMy7L5yyyb8+xskimdQh0SBDT/nfeBMfT5VVpZSY2lrWFpE/bRWhBNkXzdff6BC6JAkLqXW83pQzPryD8GYKEcZ6+MCuY2HMV6c89VrDnYNmZzpDhExXzJEXcsxzGFvcUKZtRmSULdwI1hcEp3eOBbLhY1nEeKoQ9TbUIrg4jx53VO8+mn07ud+ChIytdfnD+sHz3vIKjzZCh8Iik3Z+3jB8ipBhytIjKb3kXt7zeDfxkyOcv4mAh2HWDSLg/b9zjSud5F15okB/hLtMvQs/Gap7MHnB0Ay3cm4+A6irOfjF2M9XNiiHMLqbDXFcKGl4qSjPtgxwGMDUla7qFBGJGX+zzO3qrNRTOcOAg74k4ZiDqvVWSCaIyytx9ampKO15t8mh/r++3ao+MkECDTwh9vYjjMuZWaRdE=",
-    "ansible_swapfree_mb": 4442,
+    "ansible_swapfree_mb": 4493,
     "ansible_swaptotal_mb": 4531,
     "ansible_system": "Linux",
     "ansible_system_capabilities": [],
     "ansible_system_capabilities_enforced": "False",
     "ansible_system_vendor": "VMware, Inc.",
-    "ansible_uptime_seconds": 108687,
+    "ansible_uptime_seconds": 247081,
     "ansible_user_dir": "/root",
     "ansible_user_gecos": "root",
     "ansible_user_gid": 0,

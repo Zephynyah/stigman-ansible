@@ -23,6 +23,10 @@ stigman_service_restartsec: "30s"
 stigman_log_file: "stigman.log"
 stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 
+stigman_hostname: localhost
+stigman_http_port: 54000
+internal_force_health_check: true
+
 ### Required Configuration
 
 #
