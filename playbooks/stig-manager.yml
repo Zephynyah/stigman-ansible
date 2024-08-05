@@ -8,8 +8,9 @@
     - stig-manager
   vars:
     stigman_classification: U
-    stigman_oidc_provider: http://localhost:8080/realms/stigman
-    stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+    stigman_http_relative_path: /
+    #stigman_oidc_provider: http://localhost:8080/realms/stigman
+    #stigman_client_oidc_provider: http://localhost:8080/realms/stigman
 
     # DB
     stigman_db_user: stigman

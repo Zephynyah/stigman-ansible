@@ -1,8 +1,24 @@
 ---
-- name: "Restart and enable mysql service"
-  ansible.builtin.systemd:
-    name: mysql
-    enabled: true
-    state: restarted
-    daemon_reload: true
-  become: true
+- name: Test nginx and restart
+  command: nginx -t
+  when: nginx_install_service
+  notify:
+    - 'Restart nginx'
+
+- name: Test nginx and reload
+  command: nginx -t
+  when: nginx_install_service
+  notify:
+    - 'Reload nginx'
+
+- name: Restart nginx
+  service:
+    name: 'nginx'
+    state: 'restarted'
+  when: nginx_install_service
+
+- name: Reload nginx
+  service:
+    name: 'nginx'
+    state: 'reloaded'
+  when: nginx_install_service

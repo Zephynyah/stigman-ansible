@@ -1,11 +1,14 @@
 ---
-- name: Set up Keycloak
+- name: Set up Nginx
   hosts: localhost
   gather_facts: true
   become: yes
   become_method: sudo  
   roles:
-    - keycloak
+    - nginx
   vars:
-    hostname: "eh-stigman-1"
-    admin_password: "Password123!"
+    nginx_openssl_conf: "{{ role_path }}/openssl.conf"
+    nginx_ssl_dir: "/etc/pki/nginx"
+    nginx_site_name: "eh-stigman-1"
+    nginx_ssl_override_filename: localhost
+    nginx_ssl_generate_self_signed_certs: true

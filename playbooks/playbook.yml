@@ -40,13 +40,23 @@
         #keycloak_admin_pass: "{{ admin_pass_keycloak }}"
         keycloak_offline_install: true
 
+    - name: Include Ngix
+      include_role:
+        name: nginx
+      vars:
+        nginx_openssl_conf: "{{ role_path }}/openssl.conf"
+        nginx_ssl_dir: "/etc/pki/nginx"
+        nginx_site_name: "eh-stigman-1"
+        nginx_ssl_override_filename: localhost
+        nginx_ssl_generate_self_signed_certs: true
+
     - name: Include STIG Manager 
       include_role:
         name: stig-manager
       vars:
         stigman_classification: U
-        stigman_oidc_provider: http://localhost:8080/realms/stigman
-        stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+        #stigman_oidc_provider: http://localhost:8080/realms/stigman
+        #stigman_client_oidc_provider: http://localhost:8080/realms/stigman
 
         # DB
         stigman_db_user: stigman

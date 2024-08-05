@@ -85,7 +85,7 @@ cache-config-file=cache-ispn.xml
 proxy-headers={{ keycloak_proxy_headers | lower }}
 {% elif keycloak_proxy_mode is defined and keycloak_proxy_mode != "none" %}
 # Deprecated Proxy configuration
-#proxy={{ keycloak_proxy_mode }}
+proxy={{ keycloak_proxy_mode }}
 {% endif %}
 
 spi-sticky-session-encoder-infinispan-should-attach-route={{ keycloak_spi_sticky_session_encoder_infinispan_should_attach_route | d(true) | lower }}

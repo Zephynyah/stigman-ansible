@@ -23,7 +23,8 @@ stigman_service_restartsec: "30s"
 stigman_log_file: "stigman.log"
 stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 
-stigman_hostname: localhost
+stigman_hostname: eh-stigman-1
+stigman_http_relative_path: /
 stigman_http_port: 54000
 internal_force_health_check: true
 
@@ -32,7 +33,7 @@ internal_force_health_check: true
 #
 stigman_classification: U
 stigman_oidc_provider: http://localhost:8080/realms/stigman
-stigman_client_oidc_provider: http://localhost:8080/realms/stigman
+stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_relative_path }}{{ '/' if stigman_http_relative_path | length > 1 else '' }}realms/stigman }}"
 
 # DB
 stigman_db_user: stigman

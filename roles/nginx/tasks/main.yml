@@ -1,54 +1,100 @@
----
-- name: Validate parameters
-  ansible.builtin.assert:
-    that:
-      - mysql_user_name is defined
-      - mysql_database_name is defined
-      - mysql_data_dir is defined
-    quiet: true
-
-- name: Validate admin  password
-  ansible.builtin.assert:
-    that:
-      - mysql_user_password | length > 11
-    quiet: true
-    fail_msg: "The database password is empty or invalid. Please set the mysql_user_name to a 11+ char long string"
-    success_msg: "{{ 'Database user password OK' }}"
-
 - name: Ensure required packages are installed
-  ansible.builtin.include_tasks: fastpackages.yml
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: fastpackages
   vars:
-    packages_list: "{{ mysql_prereq_package_list }}"
+    packages_list: [ nginx ]
+
+- name: Ensure nginx in a running state
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+  register: nginxDetails
+  until: nginxDetails.status.ActiveState == "active"
+  retries: 10
+  delay: 3
+
+- name: Stat nginx configuration
+  stat: path=/etc/nginx/nginx.conf
+  register: siteconfig_stat
+
+- name: Stat nginx certificate
+  stat: 
+    path: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt"
+  register: sitecert_stat
+
+- name: Stat nginx key
+  stat: 
+    path: "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
+  register: sitekey_stat
+
+- name: Stat nginx configuration
+  stat: 
+    path: "/etc/nginx/nginx.conf.org" 
+  register: configuration_stat
+
+- name: Backup nginx configuration
+  copy:
+    src: /etc/nginx/nginx.conf
+    dest: /etc/nginx/nginx.conf.org
+  when: configuration_stat.stat.exists == False
+
+- name: Configure nginx
+  template:
+    src: 'nginx.conf.j2'
+    dest: '/etc/nginx/nginx.conf'
+    group: 'root'
+    owner: 'root'
+    mode: '0644'
+  register: nginx_register_nginx_config
   notify:
-     - start mysql
+    - Test nginx and reload
 
-- name: creating STIG Manager mysql user
-  ansible.builtin.mysql_user:
-    name: "{{ mysql_user_name }}"
-    password: "{{ mysql_user_password }}"
-    priv: '*.*:ALL'
-    host: '%'
-    state: present    
+# Ensure openssl is present
+- name: ensuring openssl is present
+  package:
+    name: "{{item}}"
+    state: installed
+  with_items:
+    - openssl
 
-- name: creating Stigman DB
-  ansible.builtin.mysql_db:
-    name: "{{ mysql_database_name }}"
-    state: present    
+# Create the nginx private directory
+- name: creating nginx private directory
+  file:
+    path: "{{ nginx_ssl_dir}}/private"
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0775
+    recurse: yes
 
-# - name: Set root password for MySQL
-#   ansible.builtin.mysql_user:
-#     name: root
-#     password: "mysql_password"
-#     host: localhost
-#     login_unix_socket: true
-#     state: present
+# Generate a self signed certificate for the web service
+- name: generate self signed certificate
+  command: >
+    openssl req
+      -config {{ nginx_openssl_conf }} 
+      -newkey rsa 
+      -x509 
+      -days 365 
+      -keyout {{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key 
+      -out {{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt
+  when: sitecert_stat.stat.exists == False
+  notify: Test nginx and restart
 
-
-# - name: Enable remote login to mysql
-#   lineinfile:
-#       path: /etc/mysql/mysql.conf.d/mysqld.cnf
-#       regexp: '^bind-address'
-#       line: 'bind-address = 0.0.0.0'
-#       backup: yes
+# - name: Generate self signed SSL certificates
+#   command: >
+#     openssl req
+#       -new
+#       -newkey rsa:4096
+#       -days 365
+#       -nodes
+#       -x509
+#       -subj "/C=US/ST=NY/L=NY/O=NA/CN=localhost"
+#       -keyout "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
+#       -out "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
+#   args:
+#     creates: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.pem
+#   with_dict: '{{ nginx_sites }}'
+#   when: nginx_ssl_generate_self_signed_certs
 #   notify:
-#       - restart mysql
+#     - Test nginx and restart

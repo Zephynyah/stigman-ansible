@@ -17,6 +17,7 @@
         - mysqld
         - keycloak
         - stigman
+        - nginx
 
     - name: Ensure removal of persistent facts from ansible.builtin.set_fact
       ansible.builtin.meta: clear_facts
@@ -44,6 +45,26 @@
         - /etc/systemd/system/stigman.service
         - /opt/stig-manager-1.4.12/
         - /opt/stig-manager-linux-1.4.12.tar.xz
+
+    - name: Delete old nginx configuration before restore
+      ansible.builtin.file:
+        path: /etc/nginx/nginx.conf
+        state: absent
+
+    - name: Restore nginx configuration
+      copy:
+        src: /etc/nginx/nginx.conf.org
+        dest: /etc/nginx/nginx.conf
+
+    - name: Ensure absence of nginx
+      become: true
+      ansible.builtin.file:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/pki/nginx/eh-stigman-1.crt
+        - /etc/pki/nginx/private/eh-stigman-1.key
+
 
 
 
