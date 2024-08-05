@@ -25,6 +25,7 @@
         - keycloak
         - stigman
         - nginx
+        - watcher
 
     - name: Ensure removal of persistent facts from ansible.builtin.set_fact
       ansible.builtin.meta: clear_facts

@@ -128,6 +128,14 @@ https://github.com/nginxinc/ansible-role-nginx/blob/main/handlers/main.yml
         # stigman_client_welcome_message:
         # stigman_client_welcome_title:
 
+  - name: Include STIG Manager Watcher
+      include_role:
+        name: stigman-watcher
+      vars:
+        stigman_watcher_auth_strategy: client_id
+        stigman_watcher_add_existing: true
+        stigman_watcher_api_base: http://localhost:54000/api
+        stigman_watcher_authority: http://localhost:8080/realms/stigman
 
     - name: Verify all sevices are running 
       block:
