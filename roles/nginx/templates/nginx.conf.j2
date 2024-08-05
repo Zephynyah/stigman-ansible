@@ -1,68 +1,44 @@
-# For more information on configuration, see:
-#   * Official English Documentation: http://nginx.org/en/docs/
-#   * Official Russian Documentation: http://nginx.org/ru/docs/
+# {{ ansible_managed }}
 
-user nginx;
-worker_processes auto;
-error_log /var/log/nginx/error.log;
-pid /run/nginx.pid;
-
-# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
-include /usr/share/nginx/modules/*.conf;
-
+user {{ nginx_user }};
+worker_processes {{ nginx_worker_processes }};
+worker_rlimit_nofile {{ nginx_worker_rlimit_nofile }};
 
 events {
-  ## Default: 1024
-  worker_connections  4096;  
+  worker_connections {{ nginx_events_worker_connections }};
 }
 
 http {
-    server {
-        listen                      443 ssl;
-        server_name                 localhost;
-        root                        /usr/share/nginx/html;
-        client_max_body_size        100M;
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
 
-        ssl_certificate "/etc/pki/nginx/{{ nginx_site_name }}.crt";
-        ssl_certificate_key "/etc/pki/nginx/private/{{ nginx_site_name }}.key";
+  server_tokens {{ nginx_http_server_tokens }};
+  {% if nginx_http_add_headers is iterable %}
+    {%- for header in nginx_http_add_headers -%}
+  add_header {{ header }};
+    {% endfor -%}
+  {% endif %}
 
-        ssl_session_cache shared:SSL:1m;
-        ssl_session_timeout  10m;
-        ssl_ciphers PROFILE=SYSTEM;
-        ssl_prefer_server_ciphers   on;     
+  log_format combined_custom {{ nginx_http_access_log_format }};
+  access_log /var/log/nginx/access.log combined_custom;
 
-        # if ($return_unauthorized) { return 496; }
+  server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size }};
+  server_names_hash_max_size {{ nginx_http_server_names_hash_max_size }};
+  sendfile {{ nginx_http_sendfile }};
+  tcp_nopush {{ nginx_http_tcp_nopush }};
+  keepalive_timeout {{ nginx_http_keepalive_timeout }};
+  types_hash_max_size {{ nginx_http_types_hash_max_size }};
+  client_max_body_size {{ nginx_http_client_max_body_size }};
+  gzip {{ nginx_http_gzip }};
+  gzip_types {{ nginx_http_gzip_types }};
+  gzip_disable "{{ nginx_http_gzip_disable }}";
 
-        #location / {
-            #autoindex on;
-            #ssi on;
-        #}
+  {% if nginx_http_directives is iterable -%}
+  {% for key in nginx_http_directives %}
+    {{ key }};
+  {% endfor %}
+  {% endif %}
 
-        location /stigman/ {
-            proxy_pass              http://localhost:54000/;
-        }
-        
-        location / {
-            proxy_pass              http://localhost:8080/;
-            proxy_set_header        Host               $host;
-            proxy_set_header        X-Real-IP          $remote_addr;
-            proxy_set_header        X-Forwarded-For    $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Host   $host;
-            proxy_set_header        X-Forwarded-Server $host;
-            proxy_set_header        X-Forwarded-Port   $server_port;
-            proxy_set_header        X-Forwarded-Proto  $scheme;
-            proxy_set_header        ssl-client-cert    $ssl_client_escaped_cert;
-            proxy_buffer_size       128k;
-            proxy_buffers           4 256k;
-            proxy_busy_buffers_size 256k;
-        }
-
-        error_page 404 /404.html;
-            location = /40x.html {
-        }
-
-        error_page 500 502 503 504 /50x.html;
-            location = /50x.html {
-        }
-    }
+  include /etc/nginx/conf.d/*.conf;
+  include /etc/nginx/sites-enabled/*;
 }

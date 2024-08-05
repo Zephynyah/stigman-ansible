@@ -1,7 +1,9 @@
 ---
-nginx_install_service: true
-nginx_openssl_conf: "{{ role_path }}/openssl.conf"
-nginx_ssl_dir: "/etc/pki/nginx"
-nginx_site_name: "eh-stigman-1"
-nginx_ssl_override_filename: localhost
-nginx_ssl_generate_self_signed_certs: true
+nginx: # noqa var-naming this is an internal dict of interpolated values
+  service_name: "nginx"
+  ssl_private_dir: "{{ nginx_ssl_dir }}/private"
+  certificate_file: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt"
+  key_file: "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
+  siteconf_file: "{{ nginx_siteconf_dir }}/{{ nginx_site_name }}.conf"
+  cofig_dir: /etc/nginx/conf.d/{{ nginx_site_name }}.conf
+  

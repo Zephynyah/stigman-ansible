@@ -1,9 +1,21 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - nginx.key_file is defined
+      - nginx.certificate_file is defined
+      - nginx.siteconf_file is defined
+      - nginx_ssl_generate_self_signed_certs is defined
+    quiet: true
+
 - name: Ensure required packages are installed
   ansible.builtin.include_role:
     name: common
     tasks_from: fastpackages
   vars:
-    packages_list: [ nginx ]
+    packages_list:
+      - nginx
+      - openssl
 
 - name: Ensure nginx in a running state
   ansible.builtin.systemd:
@@ -14,23 +26,31 @@
   retries: 10
   delay: 3
 
+- name: Wait for service 'nginx' to be running
+  ansible.builtin.service_facts:
+  register: result
+  until: result.ansible_facts.services['nginx.service'].state == 'running'
+  retries: 10
+  delay: 3
+
 - name: Stat nginx configuration
-  stat: path=/etc/nginx/nginx.conf
+  stat:
+    path: /etc/nginx/nginx.conf
   register: siteconfig_stat
 
 - name: Stat nginx certificate
-  stat: 
-    path: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt"
+  stat:
+    path: "{{ nginx.certificate_file }}"
   register: sitecert_stat
 
 - name: Stat nginx key
-  stat: 
-    path: "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
+  stat:
+    path: "{{ nginx.key_file }}"
   register: sitekey_stat
 
 - name: Stat nginx configuration
-  stat: 
-    path: "/etc/nginx/nginx.conf.org" 
+  stat:
+    path: /etc/nginx/nginx.conf.org
   register: configuration_stat
 
 - name: Backup nginx configuration
@@ -39,29 +59,10 @@
     dest: /etc/nginx/nginx.conf.org
   when: configuration_stat.stat.exists == False
 
-- name: Configure nginx
-  template:
-    src: 'nginx.conf.j2'
-    dest: '/etc/nginx/nginx.conf'
-    group: 'root'
-    owner: 'root'
-    mode: '0644'
-  register: nginx_register_nginx_config
-  notify:
-    - Test nginx and reload
-
-# Ensure openssl is present
-- name: ensuring openssl is present
-  package:
-    name: "{{item}}"
-    state: installed
-  with_items:
-    - openssl
-
 # Create the nginx private directory
 - name: creating nginx private directory
   file:
-    path: "{{ nginx_ssl_dir}}/private"
+    path: "{{ nginx.ssl_private_dir }}"
     state: directory
     owner: nginx
     group: nginx
@@ -72,29 +73,41 @@
 - name: generate self signed certificate
   command: >
     openssl req
-      -config {{ nginx_openssl_conf }} 
-      -newkey rsa 
-      -x509 
-      -days 365 
-      -keyout {{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key 
-      -out {{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt
-  when: sitecert_stat.stat.exists == False
-  notify: Test nginx and restart
+      -config {{ nginx_openssl_conf }}
+      -newkey rsa
+      -x509
+      -days 365
+      -keyout {{ nginx.key_file }}
+      -out {{ nginx.certificate_file }}
+  #when:
+    #- sitecert_stat.stat.exists == False
+    #- nginx_ssl_generate_self_signed_certs == True
+  notify:
+    - Test nginx and restart
 
-# - name: Generate self signed SSL certificates
-#   command: >
-#     openssl req
-#       -new
-#       -newkey rsa:4096
-#       -days 365
-#       -nodes
-#       -x509
-#       -subj "/C=US/ST=NY/L=NY/O=NA/CN=localhost"
-#       -keyout "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
-#       -out "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
-#   args:
-#     creates: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.pem
-#   with_dict: '{{ nginx_sites }}'
-#   when: nginx_ssl_generate_self_signed_certs
-#   notify:
-#     - Test nginx and restart
+- name: Configure nginx
+  template:
+    src: 'server.conf.j2'
+    dest: "{{ nginx.siteconf_file }}"
+    group: 'root'
+    owner: 'root'
+    mode: '0644'
+  register: nginx_register_nginx_config
+  notify:
+    - Test nginx and reload
+
+# Patch the nginx config file 'worker_connections'
+- name: Patch the nginx config
+  ansible.builtin.replace:
+    dest: /etc/nginx/nginx.conf
+    regexp: '^(.*){{ item.regexp }}(.*)$'
+    replace: '{{ item.replace }}'
+    owner: nginx
+    group: nginx
+    mode: 644
+  with_items:
+    - { regexp: 'worker_connections', replace: '     worker_connections 4096;' }
+    # - { regexp: '#ssl_certificate_key', replace: 'ssl_certificate_key' }
+    # - { regexp: '#ssl_certificate', replace: 'ssl_certificate' }
+  notify:
+    - Test nginx and restart

@@ -1,18 +1,14 @@
 ---
-### Mysql configuration settings
+nginx_install_service: true
 
-# database name, this is a required variable
-mysql_database_name: stigman
+nginx_openssl_conf: "{{ role_path }}/openssl.conf"
 
-# database user, this is a required variable
-mysql_user_name: stigman
+nginx_ssl_dir: "/etc/pki/nginx"
 
-# user password, this is a required variable
-mysql_user_password: ''
+nginx_site_name: "eh-stigman-1"
 
-#
-mysql_data_dir: /var/lib/mysql
+nginx_siteconf_dir: "/etc/nginx/conf.d"
 
-### List prerequsite packages
-mysql_prereq_package_list:
-      - mysql-server
+nginx_ssl_override_filename: localhost
+
+nginx_ssl_generate_self_signed_certs: true

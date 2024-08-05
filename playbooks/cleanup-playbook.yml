@@ -5,8 +5,15 @@
   become: yes
   become_method: sudo  
   ignore_errors: true
-  
+  vars:
+    keycloak_version: 24.0.4
+    stigman_version: 1.4.12
+    watcher_version: 1.4.4
+
   tasks:
+    - command: hostname -f
+      register: result
+
     - name: Ensure all services are stopped & disabled
       become: true
       ansible.builtin.systemd:
@@ -22,7 +29,6 @@
     - name: Ensure removal of persistent facts from ansible.builtin.set_fact
       ansible.builtin.meta: clear_facts
 
-
     - name: Ensure absence of kecloak
       become: true
       ansible.builtin.file:
@@ -32,8 +38,8 @@
         - /etc/ansible/facts.d/keycloak.fact
         - /etc/sysconfig/keycloak
         - /etc/systemd/system/keycloak.service
-        - /opt/keycloak-24.0.4/
-        - /opt/keycloak-24.0.4.tar.gz
+        - /opt/keycloak-{{ keycloak_version }}/
+        - /opt/keycloak-{{ keycloak_version }}.tar.gz
 
 
     - name: Ensure absence of stig-manager
@@ -43,8 +49,18 @@
         state: absent
       with_items:
         - /etc/systemd/system/stigman.service
-        - /opt/stig-manager-1.4.12/
-        - /opt/stig-manager-linux-1.4.12.tar.xz
+        - "/opt/stig-manager-{{ stigman_version }}/"
+        - "/opt/stig-manager-linux-{{ stigman_version }}.tar.xz"
+
+    - name: Ensure absence of stigman-watcher
+      become: true
+      ansible.builtin.file:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/systemd/system/watcher.service
+        - /opt/stigman-watcher-{{ watcher_version }}/
+        - /opt/stigman-watcher-linux-{{ watcher_version }}.tar.gz
 
     - name: Delete old nginx configuration before restore
       ansible.builtin.file:
@@ -62,8 +78,11 @@
         name: "{{ item }}"
         state: absent
       with_items:
-        - /etc/pki/nginx/eh-stigman-1.crt
-        - /etc/pki/nginx/private/eh-stigman-1.key
+        - /etc/pki/nginx/{{ result.stdout }}.crt
+        - /etc/pki/nginx/private/{{ result.stdout }}.key
+        - /etc/nginx/conf.d/{{ result.stdout }}.conf
+        - /etc/nginx/conf.d/server.conf
+
 
 
 
