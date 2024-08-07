@@ -26,7 +26,13 @@ stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 stigman_hostname: eh-stigman-1
 stigman_http_relative_path: /
 stigman_http_port: 54000
-internal_force_health_check: true
+
+#
+stigman_force_health_check: true
+stigman_restart_health_check_reries: 5
+stigman_restart_health_check_delay: 3
+stigman_health_checkpath_path: /api/op/definition?jsonpath=%24.info.version
+
 
 ### Required Configuration
 
@@ -77,3 +83,5 @@ stigman_db_password: ''
 # stigman_swagger_redirect:
 # stigman_swagger_server:
 
+
+ #http://eh-stigman-1:54000/api/op/definition?jsonpath=%24.paths/assets

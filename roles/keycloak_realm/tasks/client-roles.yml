@@ -1,0 +1,26 @@
+- name: Patch | set_fact for stigman watcher scope query
+  set_fact:
+    user_read_query: "[?name=='stig-manager:user:read'].id"
+  
+- name: Patch | Set_fact for stigman watcher id
+  set_fact:
+    user_read_client_scope: "{{ default_existing_scopes.json | json_query(user_read_query) | first }}"
+
+
+##  /admin/realms/{realm}/clients/{client-uuid}/default-client-scopes/{clientScopeId}
+- name: "Update User Password"
+  ansible.builtin.uri:
+    url: "{{ keycloak_url }}{{ keycloak_context }}/admin/realms/stigman/clients/{{stigman_watcher_clientId}}/default-client-scopes/{{user_read_client_scope}}"
+    method: PUT
+    validate_certs: false
+    body_format: json
+    status_code:
+      - 200
+      - 204
+    headers:
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
+  register: keycloak_user
+
+- name: Output Transport Zone ID on Screen
+  debug:
+    msg: "{{ keycloak_user }}"

@@ -116,7 +116,6 @@
   become: true
   when:
     - (not path_to_linuxstatic.stat.exists) or new_version_downloaded.changed
- 
 
 - name: Inform decompression was not executed
   ansible.builtin.debug:
@@ -127,8 +126,6 @@
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
 
-#- name: Include restart tasks
-#  ansible.builtin.include_tasks: restart.yml
  
 
 

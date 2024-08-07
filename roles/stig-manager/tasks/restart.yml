@@ -12,7 +12,7 @@
     url: "{{ stigman.health_url }}"
   register: stigman_status
   until: stigman_status.status == 200
-  retries: 5
-  delay: 3
-  when: internal_force_health_check | default(true)
+  retries: "{{ stigman_restart_health_check_reries | default(5) }}"
+  delay: "{{ stigman_restart_health_check_delay | default(3) }}"
+  when: stigman_force_health_check | default(true)
 

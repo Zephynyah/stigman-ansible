@@ -1,0 +1,81 @@
+---
+- name: Generate keycloak auth token
+  ansible.builtin.uri:
+    url: "{{ keycloak_url }}{{ keycloak_context }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body: "client_id={{ keycloak_auth_client }}&username={{ keycloak_admin_user }}&password={{ keycloak_admin_pass }}&grant_type=password"
+    validate_certs: false
+  no_log: "{{ keycloak_no_log | default('True') }}"
+  register: keycloak_auth_response
+  until: keycloak_auth_response.status == 200
+  retries: 5
+  delay: 3
+
+- name: "Get all stigman client"
+  ansible.builtin.uri:
+    url: "{{ keycloak_url }}{{ keycloak_context }}/admin/realms/stigman/clients"
+    method: GET
+    status_code:
+      - 200
+      - 404
+    headers:
+      Accept: "application/json"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
+  register: stigman_client_scopes
+  when:
+    keycloak_auth_response.status == 200
+
+- name: Patch | set_fact for stigman watcher scope query
+  set_fact:
+    scope_query: "[?name=='stigman-watcher'].id"
+  
+- name: Patch | Set_fact for stigman watcher id
+  set_fact:
+    stigman_watcher_clientId: "{{ stigman_client_scopes.json | json_query(scope_query) | first  }}"
+
+- name: Output Transport Zone ID on Screen
+  debug:
+    msg: "{{stigman_watcher_clientId}}"
+
+- name: "Get existing client scopes. Only name and ids are returned."
+  ansible.builtin.uri:
+    url: "{{ keycloak_url }}{{ keycloak_context }}/admin/realms/stigman/clients/{{ stigman_watcher_clientId }}/default-client-scopes"
+    method: GET
+    status_code:
+      - 200
+      - 404
+    headers:
+      Accept: "application/json"
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
+  register: default_existing_scopes
+  when:
+    keycloak_auth_response.status == 200
+
+- name: Output Transport Zone ID on Screen
+  debug:
+    msg: "{{default_existing_scopes.json}}"
+
+- name: Patch | set_fact for stigman watcher scope query
+  set_fact:
+    user_read_query: "[?name=='stig-manager:user:read'].id"
+  
+- name: Patch | Set_fact for stigman watcher id
+  set_fact:
+    user_read_client_scope: "{{ default_existing_scopes.json | json_query(user_read_query) | first }}"
+  when: deploy_environment | d(False)
+
+
+##  /admin/realms/{realm}/clients/{client-uuid}/default-client-scopes/{clientScopeId}
+- name: "Update User Password"
+  ansible.builtin.uri:
+    url: "{{ keycloak_url }}{{ keycloak_context }}/admin/realms/stigman/clients/{{stigman_watcher_clientId}}/default-client-scopes/{{user_read_client_scope}}"
+    method: PUT
+    validate_certs: false
+    body_format: json
+    status_code:
+      - 200
+      - 204
+    headers:
+      Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
+  register: keycloak_user
+  when: user_read_client_scope | d(False)

@@ -1,6 +1,8 @@
 ---
-- name: Ensure required package firewalld are installed
-  ansible.builtin.include_tasks: fastpackages.yml
+- name: Ensure required packages are installed
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: fastpackages
   vars:
     packages_list:
       - firewalld
@@ -22,4 +24,3 @@
   loop:
     - "{{ keycloak_http_port }}/tcp"
     - "{{ keycloak_https_port }}/tcp"
-    - "{{ keycloak_jgroups_port }}/tcp"

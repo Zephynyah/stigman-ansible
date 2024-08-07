@@ -13,3 +13,9 @@
 
     keycloak_admin_pass: "Password123!"
     keycloak_offline_install: true
+    
+    keycloak_clients:
+      - name: stigman-watcher
+        client_id: stigman-watcher
+        realm: stigman
+ 

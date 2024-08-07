@@ -9,10 +9,23 @@
     keycloak_version: 24.0.4
     stigman_version: 1.4.12
     watcher_version: 1.4.4
+    mysql_db: stigman
+    mysql_db_user: stigman
 
   tasks:
     - command: hostname -f
       register: result
+
+    - name: Ensure stigman DB is removed from database
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: absent
+
+    - name: Ensure stigman DB user is removed form database
+      ansible.builtin.user:
+        name: "{{ mysql_db_user }}"
+        state: absent
+        remove: yes
 
     - name: Ensure all services are stopped & disabled
       become: true
@@ -27,8 +40,25 @@
         - nginx
         - watcher
 
+    - name: Ensure removal of mysql and its dependencies
+      ansible.builtin.dnf:
+        name: 
+          - mysql-server
+          - mysql-client 
+        state: absent
+        autoremove: yes
+
     - name: Ensure removal of persistent facts from ansible.builtin.set_fact
       ansible.builtin.meta: clear_facts
+
+    - name: Ensure absence of mysql
+      become: true
+      ansible.builtin.file:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/mysql 
+        - /var/lib/mysql 
 
     - name: Ensure absence of kecloak
       become: true

@@ -13,7 +13,7 @@
     - restart watcher
 
 
-- name: "Configure sysconfig file for {{ watcher.service_name }} service"
+- name: "Configure sysconfig file for stigman watcher service"
   become: true
   ansible.builtin.template:
     src: dotenv-example.j2

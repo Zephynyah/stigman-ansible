@@ -69,7 +69,7 @@
         # stigman_client_welcome_message:
         # stigman_client_welcome_title:
 
-   - name: Include Stigman Watcher
+    - name: Include Stigman Watcher
       include_role:
         name: stigman-watcher
       vars:

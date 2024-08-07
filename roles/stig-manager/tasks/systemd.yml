@@ -8,8 +8,6 @@
     mode: '0644'
   become: true
   register: systemdunit
-  notify:
-    - restart stigman
 
 
 - name: "Configure sysconfig file for {{ stigman.service_name }} service"

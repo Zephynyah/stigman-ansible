@@ -1,8 +1,9 @@
 ---
+## Home: 
 ## Manual download
 # curl -OL https://github.com/NUWCDIVNPT/stigman-watcher/releases/download/1.4.4/stigman-watcher-linux-1.4.4.tar.gz
 
-### Configuration specific to keycloak
+### Configuration specific to stigman watcher
 stigman_watcher_pkg: tar.gz
 stigman_watcher_version: 1.4.4
 stigman_watcher_archive: "stigman-watcher-linux-{{ stigman_watcher_version }}.{{ stigman_watcher_pkg }}"
@@ -25,10 +26,9 @@ stigman_watcher_service_restart_on_failure: true
 stigman_watcher_service_restartsec: "30s"
 stigman_watcher_config_file: "{{ stigman_watcher_home }}/.env"
 
-
 stigman_watcher_hostname: localhost
 stigman_watcher_http_port: 8080
-internal_force_health_check: true
+stigman_watcher_force_health_check: true
 
 ### Using Default Configuration
 stigman_watcher_add_existing: true
@@ -45,10 +45,10 @@ stigman_watcher_client_secret: 954fd71a-dad6-47ab-8035-060268f3d396
 stigman_watcher_client_key: 
 stigman_watcher_client_key_passphrase: 
 
-stigman_watcher_collection: 13
+stigman_watcher_collection: 1
 stigman_watcher_create_objects: false
 stigman_watcher_ignore_globs: "**/ignoreddir,**/somedir/ignoredfile"
-stigman_watcher_log_file: "watcher.log"
+stigman_watcher_log_file: "logs/watcher.log"
 stigman_watcher_log_file_level: debug
 
 #
@@ -62,3 +62,5 @@ stigman_watcher_path:
 stigman_watcher_use_polling: false
 stigman_watcher_stability_threshold: 5000
 stigman_watcher_mode: scan
+
+# http://localhost:54000/api/api/op/definition

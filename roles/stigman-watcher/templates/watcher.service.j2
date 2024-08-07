@@ -4,14 +4,14 @@ Description=STIG Manager Watcher
 After=network.target
 
 [Service]
-Type=simple
+Type=idle
 LimitNOFILE=102642
 AmbientCapabilities=CAP_SYS_ADMIN
 #AmbientCapabilities=CAP_NET_BIND_SERVICE
 
 #WorkingDirectory=/opt/stig-manager # todo: sysmlink
 WorkingDirectory={{ watcher.home }}
-ExecStart=/bin/bash -c "./watcher-watcher-linuxstatic"
+ExecStart=/bin/bash -c "./stigman-watcher-linuxstatic"
 #User={{ watcher.service_user }}
 #Group={{ watcher.service_group }}
 
@@ -21,7 +21,7 @@ Restart=always
 Restart=on-failure
 {% endif %}
 RestartSec={{ stigman_watcher_service_restartsec }}
-SuccessExitStatus=0
+#SuccessExitStatus=0
 TimeoutStartSec=60s
 TimeoutStopSec=60s
 
