@@ -1,7 +1,4 @@
 ---
-## Manual download
-# curl -OL https://github.com/NUWCDIVNPT/stig-manager/releases/download/1.4.13/stig-manager-linux-1.4.13.tar.xz
-
 ### Configuration specific to keycloak
 stigman_pkg: tar.xz
 stigman_version: 1.4.12
@@ -19,26 +16,28 @@ stigman_service_user: stigman
 stigman_service_group: stigman
 stigman_service_restart_always: true
 stigman_service_restart_on_failure: true
-stigman_service_restartsec: "30s"
-stigman_log_file: "stigman.log"
+stigman_service_restartsec: "10s"
+
+##
+stigman_log_file: "{{ stigman_home }}/logs/stigman.log"
 stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 
 stigman_hostname: eh-stigman-1
-stigman_http_relative_path: /
-stigman_http_port: 54000
+# Context path for rest calls
+stigman_http_relative_path: "/" #DEPRECATED - stigman_http_context
+stigman_http_port: 54000        #DEPRECATED - stigman_api_port
 
 #
-stigman_force_health_check: true
+stigman_force_health_check: true  #DEPRECATED - stigman_health_check_enabled
+stigman_health_checkpath_path: /api/op/definition?jsonpath=%24.info.version
 stigman_restart_health_check_reries: 5
 stigman_restart_health_check_delay: 3
-stigman_health_checkpath_path: /api/op/definition?jsonpath=%24.info.version
-
 
 ### Required Configuration
 
 #
 stigman_classification: U
-stigman_oidc_provider: http://localhost:8080/realms/stigman
+stigman_oidc_provider:    
 stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_relative_path }}{{ '/' if stigman_http_relative_path | length > 1 else '' }}realms/stigman }}"
 
 # DB
@@ -50,6 +49,7 @@ stigman_db_password: ''
 # stigman_api_max_json_body:
 # stigman_api_max_upload:
 # stigman_api_port:
+
 # stigman_client_api_base:
 # stigman_client_directory:
 # stigman_client_disabled:
@@ -61,6 +61,7 @@ stigman_db_password: ''
 # stigman_client_welcome_link:
 # stigman_client_welcome_message:
 # stigman_client_welcome_title:
+
 # stigman_db_host:
 # stigman_db_max_connections:
 # stigman_db_port:
@@ -68,6 +69,8 @@ stigman_db_password: ''
 # stigman_db_tls_ca_file:
 # stigman_db_tls_cert_file:
 # stigman_db_tls_key_file:
+
+
 # stigman_docs_directory:
 # stigman_docs_disabled:
 # stigman_log_level:

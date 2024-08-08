@@ -1,6 +1,11 @@
 # stigman-ansible
 An API and client for managing STIG assessments deployed with ansible
 
+## STIG Manger
+### Manual download
+
+# curl -OL https://github.com/NUWCDIVNPT/stig-manager/releases/download/1.4.13/stig-manager-linux-1.4.13.tar.xz
+
 https://www.redhat.com/sysadmin/ansible-playbooks-secrets
 
 

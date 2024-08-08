@@ -23,3 +23,12 @@
     mode: '0755'
   notify:
     - restart watcher
+
+
+- name: Wait for service  to be running
+  service_facts:
+  register: result
+  until: result.ansible_facts.services['watcher.service'].state == 'running'
+  retries: 10
+  delay: 5
+
