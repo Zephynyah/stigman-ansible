@@ -16,16 +16,16 @@
     - command: hostname -f
       register: result
 
-    - name: Ensure stigman DB is removed from database
-      mysql_db:
-        name: "{{ mysql_db }}"
-        state: absent
-
     - name: Ensure stigman DB user is removed form database
       ansible.builtin.user:
         name: "{{ mysql_db_user }}"
         state: absent
         remove: yes
+
+    - name: Ensure stigman DB is removed from database
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: absent
 
     - name: Ensure all services are stopped & disabled
       become: true
@@ -114,7 +114,18 @@
         - /etc/nginx/conf.d/{{ result.stdout }}.conf
         - /etc/nginx/conf.d/server.conf
 
+    - name: Ensure removal of nginx and its dependencies
+      ansible.builtin.dnf:
+        name: 
+          - nginx 
+        state: absent
+        autoremove: yes
 
+    - name: Set httpd_can_network_connect flag off
+      seboolean:
+        name: httpd_can_network_connect
+        state: no
+        persistent: no
 
 
 

@@ -2,3 +2,5 @@
 - name: "Display message"
   ansible.builtin.debug:
     msg: "keycloak_restart_strategy is none, skipping restart"
+  tags:
+    - keyclaok

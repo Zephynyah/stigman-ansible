@@ -1,0 +1,24 @@
+---
+- name: Ansible check if SQL file exists
+  become: true
+  ansible.builtin.stat:
+    path: "{{ stigman_seed_db_dump }}"
+  register: seed_db_dump
+  tags:
+    - stig-manager
+    - seed
+
+- name: Insert seed data into stigman database
+  mysql_db:
+    state: import
+    name: "{{ stigman_db_schema }}"
+    target: "{{ stigman_seed_db_dump }}"
+    login_user: "{{ stigman_db_user }}"
+    login_password: "{{ stigman_db_password }}"
+  when:
+    - stigman_seed_db_enabled is defined and stigman_seed_db_enabled
+    - seed_db_dump.stat.exists
+    - stigman_db_schema == "stigman"
+  tags:
+    - stig-manager
+    - seed

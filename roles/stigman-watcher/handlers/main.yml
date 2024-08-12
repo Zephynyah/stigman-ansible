@@ -2,3 +2,5 @@
 - name: "Restart {{ watcher.service_name }}"
   ansible.builtin.include_tasks: restart.yml
   listen: "restart watcher"
+  tags:
+    - always

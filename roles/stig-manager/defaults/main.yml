@@ -9,6 +9,10 @@ stigman_installdir: "{{ stigman_dest }}/stig-manager-{{ stigman_version }}"
 # whether to install from local archive
 stigman_offline_install: false
 
+# Seed
+stigman_seed_db_enabled: false
+stigman_seed_db_dump: "{{ role_path }}/templates/stigman.sql"
+
 ### Install location and service settings
 stigman_dest: /opt
 stigman_home: "{{ stigman_installdir }}"
@@ -22,10 +26,9 @@ stigman_service_restartsec: "10s"
 stigman_log_file: "{{ stigman_home }}/logs/stigman.log"
 stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 
-stigman_hostname: eh-stigman-1
-# Context path for rest calls
-stigman_http_relative_path: "/" #DEPRECATED - stigman_http_context
-stigman_http_port: 54000        #DEPRECATED - stigman_api_port
+stigman_hostname: "localhost"
+stigman_http_context: "/"
+stigman_api_port: 54000 
 
 #
 stigman_force_health_check: true  #DEPRECATED - stigman_health_check_enabled
@@ -37,12 +40,13 @@ stigman_restart_health_check_delay: 3
 
 #
 stigman_classification: U
-stigman_oidc_provider:    
-stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_relative_path }}{{ '/' if stigman_http_relative_path | length > 1 else '' }}realms/stigman }}"
+stigman_oidc_provider: "http://localhost:8080/realms/stigman"   
+stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_context }}{{ '/' if stigman_http_context | length > 1 else '' }}realms/stigman }}"
 
 # DB
 stigman_db_user: stigman
 stigman_db_password: ''
+stigman_db_schema: stigman
 
 ### Using Default Configuration
 # stigman_api_address:
@@ -65,7 +69,7 @@ stigman_db_password: ''
 # stigman_db_host:
 # stigman_db_max_connections:
 # stigman_db_port:
-# stigman_db_schema:
+
 # stigman_db_tls_ca_file:
 # stigman_db_tls_cert_file:
 # stigman_db_tls_key_file:

@@ -73,7 +73,7 @@ argument_specs:
                 default: "/"
                 description: "keycloak context path for rest calls. older version uses /auth"
                 type: "str"
-            stigman_http_port:
+            stigman_api_port:
                 default: 54000
                 description: "HTTP port"
                 type: "int"
@@ -83,7 +83,7 @@ argument_specs:
                 type: "bool"
         	stigman_health_check_url_path:
                 default: "/api/op/definition?jsonpath=%24.info.version"
-                description: "Path to the health check endpoint; scheme, host and stigman_http_relative_path will be prepended automatically"
+                description: "Path to the health check endpoint; scheme, host and stigman_http_context path that will be prepended automatically"
                 type: "str"
             stigman_restart_health_check_delay:
                 description: "Seconds to let pass before starting healch checks"
@@ -93,9 +93,6 @@ argument_specs:
                 description: "Number of attempts for successful health check before failing"
                 default: 5
                 type: 'int'
-
-    downstream:
-        options:
             stigman_api_address:
                 default: "0.0.0.0"
                 description: "The IP address on which the the API server will listen"
@@ -151,7 +148,7 @@ argument_specs:
                 description: "The OIDC clientId of the web client. Affects: Client"
                 type: "str"
 			stigman_client_oidc_provider
-                default: "https://{{ stigman_hostname }}{{ stigman_http_relative_path }}{{ '/' if stigman_http_relative_path | length > 1 else '' }}realms/stigman }}"
+                default: "https://{{ stigman_hostname }}{{ stigman_http_context }}{{ '/' if stigman_http_context | length > 1 else '' }}realms/stigman }}"
                 description: >
 					Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  
 					The string "/.well-known/openid-configuration" will be appended by the client when 

@@ -1,0 +1,48 @@
+---
+- name: Create nginx private directory
+  file:
+    path: "{{ nginx_ssl_private_dir }}"
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0775
+    recurse: yes
+  tags:
+    - nginx
+    - openssl
+
+- name: Generate an OpenSSL private key
+  openssl_privatekey:
+    force: true
+    path: "{{ nginx.key_file }}"
+    size: "{{ nginx.key_size }}"
+    type: "{{ nginx.key_type }}"
+    backup: yes
+  tags:
+    - nginx
+    - openssl
+
+- name: Generate an OpenSSL Certificate Signing Request with Subject information
+  openssl_csr:
+    force: true
+    path: "{{ nginx.csr_file }}"
+    privatekey_path: "{{ nginx.key_file }}"
+    country_name: "{{ nginx.ssl.country_name }}"
+    organization_name: "{{ nginx.ssl.organization_name }}"
+    email_address: "{{ nginx.ssl.email_address }}"
+    common_name: "{{ nginx.ssl.common_name }}"
+  tags:
+    - nginx
+    - openssl
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    provider: selfsigned
+    selfsigned_not_after: "+3650d"
+    force: true
+    path: "{{ nginx.crt_file }}"
+    privatekey_path: "{{ nginx.key_file }}"
+    csr_path: "{{ nginx.csr_file }}"
+  tags:
+    - nginx
+    - openssl

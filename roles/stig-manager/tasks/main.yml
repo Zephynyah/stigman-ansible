@@ -9,12 +9,16 @@
       - stigman_download_url is defined
       - stigman_version is defined
     quiet: true
+  tags:
+    - stig-manager
 
 - name: Check for an existing deployment
   become: true
   ansible.builtin.stat:
     path: "{{ stigman.home }}"
   register: existing_deploy
+  tags:
+    - stig-manager
 
 - name: "Create {{ stigman.service_name }} service user/group"
   become: true
@@ -23,6 +27,8 @@
     home: "{{ stigman_installdir }}"
     system: true
     create_home: false
+  tags:
+    - stig-manager
 
 - name: "Create {{ stigman.service_name }} install location"
   become: true
@@ -32,6 +38,8 @@
     owner: "{{ stigman.service_user }}"
     group: "{{ stigman.service_group }}"
     mode: '0750'
+  tags:
+    - stig-manager
 
 - name: Create directory for ansible custom facts
   become: true
@@ -39,17 +47,23 @@
     state: directory
     recurse: true
     path: /etc/ansible/facts.d
+  tags:
+    - stig-manager
 
 ## check remote archive
 - name: Set download archive path
   ansible.builtin.set_fact:
     archive: "{{ stigman_dest }}/{{ stigman.bundle }}"
+  tags:
+    - stig-manager
 
 - name: Check download archive path
   become: true
   ansible.builtin.stat:
     path: "{{ archive }}"
   register: archive_path
+  tags:
+    - stig-manager
 
 ## download to controller
 - name: Check local download archive path
@@ -59,6 +73,8 @@
   delegate_to: localhost
   run_once: true
   become: false
+  tags:
+    - stig-manager
 
 - name: Download stigman archive
   ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
@@ -73,7 +89,9 @@
     - archive_path.stat is defined
     - not archive_path.stat.exists
     - not stigman.offline_install
-    
+  tags:
+    - stig-manager
+
 - name: Check downloaded archive
   ansible.builtin.stat:
     path: "{{ local_path.stat.path }}/{{ stigman.bundle }}"
@@ -81,6 +99,8 @@
   delegate_to: localhost
   become: false
   run_once: true
+  tags:
+    - stig-manager
 
 ## copy and unpack
 - name: Copy archive to target nodes
@@ -96,12 +116,16 @@
     - local_archive_path.stat is defined
     - local_archive_path.stat.exists
   become: true
+  tags:
+    - stig-manager
 
 - name: "Check target directory for: {{ stigman.home }}/stig-manager-linuxstatic/"
   ansible.builtin.stat:
     path: "{{ stigman.home }}/stig-manager-linuxstatic"
   register: path_to_linuxstatic
   become: true
+  tags:
+    - stig-manager
 
 - name: "Extract stigman archive on target" # noqa no-handler need to run this here
   ansible.builtin.unarchive:
@@ -116,16 +140,27 @@
   become: true
   when:
     - (not path_to_linuxstatic.stat.exists) or new_version_downloaded.changed
+  tags:
+    - stig-manager
 
 - name: Inform decompression was not executed
   ansible.builtin.debug:
     msg: "{{ stigman.home }} already exists and version unchanged, skipping decompression"
   when:
     - (not new_version_downloaded.changed) and path_to_linuxstatic.stat.exists
+  tags:
+    - stig-manager
+
+- name: Include seed DB tasks
+  ansible.builtin.include_tasks: seed.yml
+  tags:
+    - stig-manager
+    - seed
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
-
+  tags:
+    - stig-manager
  
 
 

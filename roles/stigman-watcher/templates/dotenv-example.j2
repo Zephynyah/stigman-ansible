@@ -1,31 +1,27 @@
+{{ ansible_managed | comment }}
+
 WATCHER_ADD_EXISTING={{ stigman_watcher_add_existing }}
 WATCHER_API_BASE={{ stigman_watcher_api_base }}
 WATCHER_AUTHORITY={{ stigman_watcher_authority}}
 WATCHER_CARGO_DELAY={{ stigman_watcher_cargo_delay }}
 WATCHER_CARGO_SIZE={{ stigman_watcher_cargo_size }}
-
 WATCHER_CLIENT_ID={{ stigman_watcher_client_id }}
-
 {% if stigman_watcher_auth_strategy == "client_key" -%}
 WATCHER_CLIENT_KEY=
 WATCHER_CLIENT_KEY_PASSPHRASE=
 {% else %}
 WATCHER_CLIENT_SECRET={{ stigman_watcher_client_secret }}
 {% endif -%}
-
 WATCHER_COLLECTION={{ stigman_watcher_collection }}
 WATCHER_CREATE_OBJECTS={{ stigman_watcher_create_objects }}
-WATCHER_IGNORE_GLOBS={{ stigman_watcher_ignore_globs }}
 WATCHER_LOG_FILE={{ stigman_watcher_log_file }}
 WATCHER_LOG_FILE_LEVEL={{ stigman_watcher_log_file_level }}
-
-# watch Paths
-{% for watcherdir in stigman_watcher_path: %}
-{% if watcherdir.path is defined %}
-WATCHER_PATH={{ watcherdir.path }}
+WATCHER_IGNORE_GLOBS={{ stigman_watcher_ignore_globs }}
+{% for path in stigman_watcher_path %}
+{% if path is defined %}
+WATCHER_PATH={{ path }}
 {% endif %}
 {% endfor %}
-
 WATCHER_USE_POLLING={{ stigman_watcher_use_polling }}
 WATCHER_STABILITY_THRESHOLD={{ stigman_watcher_stability_threshold }}
 WATCHER_MODE={{ stigman_watcher_mode }}

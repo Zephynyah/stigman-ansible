@@ -1,0 +1,47 @@
+argument_specs:
+    main:
+        options:
+            mysql_hide_passwords:
+                default: true
+                description: "Hide passwords from logs"
+                type: "bool"
+            mysql_database_name:
+                default: "stigman"
+                description: "STIG Manager database name, this is a required variable"
+                type: "str"
+            mysql_user_name:
+                default: "stigman"
+                description: "STIG Manager database user, this is a required variable"
+                type: "str"
+            mysql_user_password:
+                default: "MySecurePassword"
+                description: "STIG Manager database user password, this is a required variable"
+                type: "str"
+            mysql_root_username:
+                default: "root"
+                description: "MySQL database root user, this is a required variable"
+                type: "str"
+            mysql_root_pass:
+                default: ""
+                description: "MySQL database root password, this is a required variable"
+                type: "str"
+            mysql_data_dir:
+                default: /var/lib/mysql
+                description: "RHEL MySQL Data Directory to use"
+                type: "str"
+            mysql_prereq_package_list:
+                default: [ mysql-server ]
+                description: "List of prerequsite packages to install for MySQL"
+                type: "list"
+            mysql_sort_buffer_size:
+                default: "64M"
+                description: >
+                    Sets the amount of memory for a buffer that is allocated for sessions performing a sort.
+                    Affects: STIG Manager API
+                type: "str"
+            mysql_innodb_buffer_pool_size:
+                default: "2G"
+                description: >
+                    Sets the amount of memory to use to cache tables, indexes and a few other things.
+                    Affects: STIG Manager API
+                type: "str"

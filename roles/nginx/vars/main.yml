@@ -1,9 +1,15 @@
 ---
 nginx: # noqa var-naming this is an internal dict of interpolated values
   service_name: "nginx"
-  ssl_private_dir: "{{ nginx_ssl_dir }}/private"
-  certificate_file: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt"
-  key_file: "{{ nginx_ssl_dir }}/private/{{ nginx_site_name }}.key" 
   siteconf_file: "{{ nginx_siteconf_dir }}/{{ nginx_site_name }}.conf"
-  cofig_dir: /etc/nginx/conf.d/{{ nginx_site_name }}.conf
+  crt_file: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.crt"
+  csr_file: "{{ nginx_ssl_dir }}/{{ nginx_site_name }}.csr"
+  key_file: "{{ nginx_ssl_private_dir }}/{{ nginx_site_name }}.key" 
+  key_size: "{{ nginx_ssl_key_size }}"
+  key_type: "{{ nginx_ssl_key_type }}"
+  ssl:
+    common_name: "{{ nginx_site_name | d('localhost') }}"
+    country_name: "{{ nginx_ssl_country_name | d('US') }}"
+    email_address: "{{ nginx_ssl_email_address | d('support@openssl.com') }}"
+    organization_name: "{{ nginx_ssl_organization_name | d('Ansible Computing') }}"
   

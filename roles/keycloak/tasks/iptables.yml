@@ -4,6 +4,8 @@
   vars:
     packages_list:
       - iptables
+  tags:
+    - keyclaok
 
 - name: "Configure firewall ports for {{ keycloak.service_name }}"
   become: true
@@ -18,3 +20,5 @@
     - "{{ keycloak_http_port }}"
     - "{{ keycloak_https_port }}"
     - "{{ keycloak_jgroups_port }}"
+  tags:
+    - keyclaok

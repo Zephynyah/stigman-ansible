@@ -8,3 +8,5 @@
     JAVA_HOME: "{{ keycloak_java_home | default(keycloak_pkg_java_home, true) }}"
   become: true
   changed_when: true
+  tags:
+    - keyclaok

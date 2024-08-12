@@ -6,6 +6,8 @@
     state: restarted
     daemon_reload: true
   become: true
+  tags:
+     - watcher
 
 - name: Wait until service becomes active
   ansible.builtin.uri:
@@ -15,4 +17,5 @@
   retries: 5
   delay: 3
   when: internal_force_health_check | default(true)
-
+  tags:
+     - watcher

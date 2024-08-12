@@ -10,22 +10,26 @@
   ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
   tags:
     - unbound
+    - keyclaok
 
 - name: Include install tasks
   ansible.builtin.include_tasks: install.yml
   tags:
     - install
+    - keyclaok
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
   tags:
     - systemd
+    - keyclaok
 
 - name: Include configuration key store tasks
   when: keycloak.config_key_store_enabled
   ansible.builtin.include_tasks: config_store.yml
   tags:
     - install
+    - keyclaok
 
 - name: "Configure config files for keycloak service"
   ansible.builtin.template:
@@ -42,6 +46,8 @@
   notify:
     - rebuild keycloak config
     - restart keycloak
+  tags:
+    - keyclaok
 
 - name: Ensure logdirectory exists
   ansible.builtin.file:
@@ -51,12 +57,18 @@
     group: "{{ keycloak.service_group }}"
     mode: '0775'
   become: true
+  tags:
+    - keyclaok
 
 - name: Flush pending handlers
   ansible.builtin.meta: flush_handlers
+  tags:
+    - keyclaok
 
 - name: "Start and wait for keycloak service"
   ansible.builtin.include_tasks: start.yml
+  tags:
+    - keyclaok
 
 - name: Link default logs directory
   ansible.builtin.file:
@@ -65,12 +77,16 @@
     dest: "{{ keycloak_log_target }}"
     force: true
   become: true
+  tags:
+    - keyclaok
 
 - name: Check service status
   ansible.builtin.systemd:
     name: "{{ keycloak.service_name }}"
   register: keycloak_service_status
   changed_when: false
+  tags:
+    - keyclaok
 
 - name: "Trigger bootstrapped notification: remove `keycloak_admin_user[_pass]` env vars"
   when:
@@ -80,6 +96,10 @@
   changed_when: true
   notify:
     - bootstrapped
+  tags:
+    - keyclaok
 
 - name: Flush pending handlers
   ansible.builtin.meta: flush_handlers
+  tags:
+    - keyclaok

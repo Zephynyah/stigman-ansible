@@ -4,6 +4,8 @@
     store_items:
       - key: "kc.db-password"
         value: "{{ keycloak_db_pass }}"
+  tags:
+    - keyclaok
 
 - name: "Initialize empty configuration key store"
   become: true
@@ -17,6 +19,8 @@
     keytool -delete -alias dummy -keystore {{ keycloak_config_key_store_file | quote }} -storepass {{ keycloak_config_key_store_password | quote }}
   args:
     creates: "{{ keycloak_config_key_store_file }}"
+  tags:
+    - keyclaok
 
 - name: "Set configuration key store using keytool"
   ansible.builtin.shell: |
@@ -42,6 +46,8 @@
   changed_when: true
   notify:
     - restart keycloak
+  tags:
+    - keyclaok
 
 - name: "Set owner of configuration key store {{ keycloak_config_key_store_file }}"
   ansible.builtin.file:
@@ -50,3 +56,5 @@
     group: "{{ keycloak.service_group }}"
     mode: '0400'
   become: true
+  tags:
+    - keyclaok

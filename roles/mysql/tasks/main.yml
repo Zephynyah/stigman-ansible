@@ -8,14 +8,18 @@
       - mysql_database_name is defined
       - mysql_data_dir is defined
     quiet: true
+  tags:
+    - mysql
 
 - name: Validate admin  password
   ansible.builtin.assert:
     that:
       - mysql_user_password | length > 11
     quiet: true
-    fail_msg: "The database password is empty or invalid. Please set the mysql_user_name to a 11+ char long string"
+    fail_msg: "The database password is empty or invalid. Please set the mysql_user_password to a 11+ char long string"
     success_msg: "{{ 'Database user password OK' }}"
+  tags:
+    - mysql
 
 - name: Ensure required packages are installed
   ansible.builtin.include_role:
@@ -23,23 +27,30 @@
     tasks_from: fastpackages
   vars:
     packages_list: "{{ mysql_prereq_package_list }}"
+  tags:
+    - mysql
 
 - name: Install PyMySQL python package
   ansible.builtin.pip:
     name: PyMySQL
+  tags:
+    - mysql
 
 - name: "start mysql"
   ansible.builtin.systemd:
     name: mysqld
     state: started
   become: true
+  tags:
+    - mysql
 
 - name: Ensure mysql port is started
   wait_for:
     port: 3306
     delay: 3
     timeout: 300
-
+  tags:
+    - mysql
 
 - name: creating STIG Manager mysql user
   no_log: true
@@ -49,11 +60,15 @@
     priv: '*.*:ALL'
     host: '%'
     state: present    
+  tags:
+    - mysql
 
 - name: creating Stigman DB
   mysql_db:
     name: "{{ mysql_database_name }}"
     state: present   
+  tags:
+    - mysql
 
 # https://serverfault.com/questions/1026554/how-to-do-mysql-secure-installation-via-ansible-playbook
 - name: Secure MySQL instalation
@@ -72,34 +87,30 @@
   failed_when: "'... Failed!' in secure_mysqldb.stdout_lines"
   notify:
     - restart mysql
+  tags:
+    - mysql
 
-- name: Ensure mysql port is started
+- name: Apply patch to mysqld configuration for stig-manager
+  ini_file:
+    path: /etc/my.cnf.d/mysql-server.cnf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "mysqld", option: "sort_buffer_size", value: "{{ mysql_sort_buffer_size | default('256KB') }}" }
+    - { section: "mysqld", option: "innodb_buffer_pool_size", value: "{{ mysql_innodb_buffer_pool_size | default('128M') }}" }
+  become: true
+  notify:
+    - restart mysql
+  tags:
+    - mysql
+
+- name: Ensure mysql port is open
   wait_for:
     port: 3306
     delay: 3
     timeout: 300
-
-
-- name: Insert after regex, backup, and validate
-  blockinfile:
-    path: /etc/my.cnf
-    backup: yes
-    marker: ""
-    insertafter: '\[client-server\]'
-    block: |
-      #
-      # set options that affect server only
-      #
-      [mysql]
-      sort_buffer_size={{ mysql_sort_buffer_size }}
-      innodb_buffer_pool_size={{ mysql_innodb_buffer_pool_size }}
-  become: true
-
-
-#- name: enable verbose mode
- # ini_file: dest=/etc/my.cnf section=mysql option=innodb_file_per_table  value=on backup=yes
- # tags: configuration
-
-
+  tags:
+    - always
 
 

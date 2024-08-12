@@ -8,7 +8,8 @@
     mode: '0644'
   become: true
   register: systemdunit
-
+  tags:
+    - always
 
 - name: "Configure sysconfig file for {{ stigman.service_name }} service"
   become: true
@@ -20,3 +21,5 @@
     mode: '0755'
   notify:
     - restart stigman
+  tags:
+    - always

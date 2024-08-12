@@ -1,10 +1,4 @@
 ---
-# - name: Remove sysconfig file for {{ keycloak.service_name }}
-#   become: true
-#   ansible.builtin.file:
-#     path: "{{ keycloak_sysconf_file }}"
-#     state: absent
-
 - name: "Configure sysconfig file for {{ keycloak.service_name }} service"
   become: true
   ansible.builtin.template:
@@ -17,6 +11,8 @@
     keycloak_sys_pkg_java_home: "{{ keycloak_pkg_java_home }}"
   notify:
     - restart keycloak
+  tags:
+    - keyclaok
 
 - name: "Configure systemd unit file for keycloak service"
   ansible.builtin.template:
@@ -29,3 +25,5 @@
   register: systemdunit
   notify:
     - restart keycloak
+  tags:
+    - keyclaok

@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  role_name: mysql
+  author: Jason Hickey
+  description: Install and configure mysql for stigman server configurations
+  company: Red Hat, Inc.
+
+  license: Apache License 2.0
+
+  min_ansible_version: "2.15"
+
+  platforms:
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"
+    - name: Debian
+
+  galaxy_tags:
+    - keycloak
+    - redhat
+    - rhel
+    - mysql
+    - database
+    - security
+    - rhbk
+    - debian
+    - stigman
+    - watcher

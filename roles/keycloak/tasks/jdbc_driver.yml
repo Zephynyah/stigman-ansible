@@ -6,6 +6,8 @@
   when: >
     (keycloak_jdbc_download_user is undefined and keycloak_jdbc_download_pass is not undefined) or
     (keycloak_jdbc_download_pass is undefined and keycloak_jdbc_download_user is not undefined)
+  tags:
+    - keyclaok
 
 - name: "Retrieve JDBC Driver from {{ keycloak_jdbc_download_url | default(keycloak_default_jdbc[keycloak_jdbc_engine].driver_jar_url) }}"
   ansible.builtin.get_url:
@@ -20,3 +22,5 @@
   become: true
   notify:
     - restart keycloak
+  tags:
+    - keyclaok

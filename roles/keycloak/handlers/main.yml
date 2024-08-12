@@ -3,15 +3,21 @@
 - name: "Rebuild keycloak config"
   ansible.builtin.include_tasks: rebuild_config.yml
   listen: "rebuild keycloak config"
+  tags:
+    - always
 
 - name: "Bootstrapped"
   ansible.builtin.include_tasks: bootstrapped.yml
   listen: bootstrapped
+  tags:
+    - always
 
 - name: "Restart keycloak"
   ansible.builtin.include_tasks:
     file: "{{ keycloak_restart_strategy if keycloak_ha_enabled else 'restart.yml' }}"
   listen: "restart keycloak"
+  tags:
+    - always
 
 - name: "Print deprecation warning"
   ansible.builtin.fail:
@@ -19,3 +25,5 @@
   failed_when: false
   changed_when: true
   listen: "print deprecation warning"
+  tags:
+    - always

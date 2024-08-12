@@ -1,26 +1,36 @@
 ---
-### Mysql settings
+### Mysql Default Settings
+
+# Hide passwords from logs
 mysql_hide_passwords: true
 
-# database name, this is a required variable
+# STIG Manager database name, this is a required variable
 mysql_database_name: stigman
 
-# database user, this is a required variable
+# STIG Manager database user, this is a required variable
 mysql_user_name: stigman
 
-# user password, this is a required variable
-mysql_user_password: ''
+# STIG Manager database user password, this is a required variable
+mysql_user_password: 'MySecurePassword'
 
-# database root user, this is a required variable
+# MySQL database root user, this is a required variable
 mysql_root_username: root
 
-#
+# MySQL database root password, this is a required variable
+mysql_root_pass: ""
+
+# RHEL MySQL Data Directory to use
 mysql_data_dir: /var/lib/mysql
 
-### Mysql configuration settings
+# List of prerequsite packages to install for MySQL"
+mysql_prereq_package_list: [ mysql-server ]
+
+## Mysql configuration settings
+# Sets the amount of memory for a buffer that is allocated for sessions performing a sort.
 mysql_sort_buffer_size: 64M
+
+# Sets the amount of memory to use to cache tables, indexes and a few other things.
 mysql_innodb_buffer_pool_size: 2G
 
-### List prerequsite packages
-mysql_prereq_package_list: [ mysql-server ]
+
 

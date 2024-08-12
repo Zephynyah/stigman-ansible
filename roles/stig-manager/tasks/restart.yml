@@ -6,6 +6,8 @@
     state: restarted
     daemon_reload: true
   become: true
+  tags:
+    - always
 
 - name: Wait until service becomes active
   ansible.builtin.uri:
@@ -15,4 +17,5 @@
   retries: "{{ stigman_restart_health_check_reries | default(5) }}"
   delay: "{{ stigman_restart_health_check_delay | default(3) }}"
   when: stigman_force_health_check | default(true)
-
+  tags:
+    - always

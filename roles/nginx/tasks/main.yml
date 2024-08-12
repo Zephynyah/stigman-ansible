@@ -2,11 +2,15 @@
 - name: Validate parameters
   ansible.builtin.assert:
     that:
+      - nginx.service_name is defined
       - nginx.key_file is defined
-      - nginx.certificate_file is defined
+      - nginx.crt_file is defined
+      - nginx.csr_file is defined
       - nginx.siteconf_file is defined
       - nginx_ssl_generate_self_signed_certs is defined
     quiet: true
+  tags:
+    - nginx
 
 - name: Ensure required packages are installed
   ansible.builtin.include_role:
@@ -16,6 +20,8 @@
     packages_list:
       - nginx
       - openssl
+  tags:
+    - nginx
 
 - name: Ensure nginx in a running state
   ansible.builtin.systemd:
@@ -25,67 +31,61 @@
   until: nginxDetails.status.ActiveState == "active"
   retries: 10
   delay: 3
+  tags:
+    - nginx
 
-- name: Wait for service 'nginx' to be running
-  ansible.builtin.service_facts:
-  register: result
-  until: result.ansible_facts.services['nginx.service'].state == 'running'
-  retries: 10
-  delay: 3
+- name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+  become: true
+  command: setsebool httpd_can_network_connect on -P
+  when:
+    - nginx_httpd_can_network_connect_enabled == True
+  tags:
+    - nginx
+    - setsebool
 
 - name: Stat nginx configuration
   stat:
     path: /etc/nginx/nginx.conf
   register: siteconfig_stat
+  tags:
+    - nginx
 
 - name: Stat nginx certificate
   stat:
-    path: "{{ nginx.certificate_file }}"
+    path: "{{ nginx.crt_file }}"
   register: sitecert_stat
+  tags:
+    - nginx
 
 - name: Stat nginx key
   stat:
     path: "{{ nginx.key_file }}"
   register: sitekey_stat
+  tags:
+    - nginx
 
 - name: Stat nginx configuration
   stat:
     path: /etc/nginx/nginx.conf.org
   register: configuration_stat
+  tags:
+    - nginx
 
 - name: Backup nginx configuration
   copy:
     src: /etc/nginx/nginx.conf
     dest: /etc/nginx/nginx.conf.org
   when: configuration_stat.stat.exists == False
+  tags:
+    - nginx
 
-# Create the nginx private directory
-- name: creating nginx private directory
-  file:
-    path: "{{ nginx.ssl_private_dir }}"
-    state: directory
-    owner: nginx
-    group: nginx
-    mode: 0775
-    recurse: yes
 
-# Generate a self signed certificate for the web service
-- name: generate self signed certificate
-  command: >
-    openssl req
-      -config {{ nginx_openssl_conf }}
-      -newkey rsa
-      -x509
-      -days 365
-      -keyout {{ nginx.key_file }}
-      -out {{ nginx.certificate_file }}
-  #when:
-    #- sitecert_stat.stat.exists == False
-    #- nginx_ssl_generate_self_signed_certs == True
-  notify:
-    - Test nginx and restart
+- name: Include OpenSSL for Selfsigned certificate
+  ansible.builtin.include_tasks: openssl.yml
+  tags:
+    - openssl
 
-- name: Configure nginx
+- name: "Configure nginx server conf file. {{ nginx.siteconf_file }}"
   template:
     src: 'server.conf.j2'
     dest: "{{ nginx.siteconf_file }}"
@@ -95,9 +95,10 @@
   register: nginx_register_nginx_config
   notify:
     - Test nginx and reload
+  tags:
+    - nginx
 
-# Patch the nginx config file 'worker_connections'
-- name: Patch the nginx config
+- name: PPatch the nginx config file 'worker_connections'
   ansible.builtin.replace:
     dest: /etc/nginx/nginx.conf
     regexp: '^(.*){{ item.regexp }}(.*)$'
@@ -107,7 +108,7 @@
     mode: 644
   with_items:
     - { regexp: 'worker_connections', replace: '     worker_connections 4096;' }
-    # - { regexp: '#ssl_certificate_key', replace: 'ssl_certificate_key' }
-    # - { regexp: '#ssl_certificate', replace: 'ssl_certificate' }
   notify:
     - Test nginx and restart
+  tags:
+    - nginx

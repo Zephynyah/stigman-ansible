@@ -6,6 +6,8 @@
   vars:
     packages_list:
       - firewalld
+  tags:
+    - nginx
 
 - name: Enable and start the firewalld service
   become: true
@@ -13,6 +15,8 @@
     name: firewalld
     enabled: true
     state: started
+  tags:
+    - nginx
 
 - name: "Configure firewall ports"
   become: true
@@ -24,3 +28,5 @@
   loop:
     - "{{ keycloak_http_port }}/tcp"
     - "{{ keycloak_https_port }}/tcp"
+  tags:
+    - nginx

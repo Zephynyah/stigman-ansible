@@ -9,6 +9,8 @@
           run_once: true
       vars:
         internal_force_health_check: true
+  tags:
+    - keyclaok
 
     - name: "Restart and enable {{ keycloak.service_name }} service on other hosts"
       ansible.builtin.systemd:
@@ -18,3 +20,5 @@
         daemon_reload: true
       become: true
       when: inventory_hostname != ansible_play_hosts | first
+  tags:
+    - keyclaok

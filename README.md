@@ -171,3 +171,35 @@ https://github.com/nginxinc/ansible-role-nginx/blob/main/handlers/main.yml
           ansible.builtin.fail:
             msg: Stigman watcher is not present, why? It should have been there!
           when: ansible_facts.services["watcher.service"] is not defined
+
+
+- name: Wait for service  to be running
+  service_facts:
+  register: service_result
+  until: result.ansible_facts.services['watcher.service'].state == 'running'
+  retries: 5
+  delay: 3
+  failed_when: "'FAILED' in service_result.stderr"
+
+
+- name: Insert after regex, backup, and validate
+  blockinfile:
+    path: /etc/my.cnf
+    backup: yes
+    marker: ""
+    insertafter: '\[client-server\]'
+    block: |
+      #
+      # set options that affect server only
+      #
+      [mysqld]
+      sort_buffer_size = {{ mysql_sort_buffer_size }}
+      innodb_buffer_pool_size = {{ mysql_innodb_buffer_pool_size }}
+  become: true
+  tags:
+    - always
+
+#- name: enable verbose mode
+ # ini_file: dest=/etc/my.cnf section=mysql option=innodb_file_per_table  value=on backup=yes
+ # tags: configuration
+

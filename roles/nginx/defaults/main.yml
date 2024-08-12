@@ -3,12 +3,28 @@ nginx_install_service: true
 
 nginx_openssl_conf: "{{ role_path }}/openssl.conf"
 
-nginx_ssl_dir: "/etc/pki/nginx"
-
 nginx_site_name: "eh-stigman-1"
 
 nginx_siteconf_dir: "/etc/nginx/conf.d"
 
-nginx_ssl_override_filename: localhost
+nginx_ssl_key_size: 4096
+# Others include DSA, ECC, Ed25519, Ed448, X25519, X448
+
+nginx_ssl_key_type: "RSA"
+
+nginx_ssl_country_name: "US" 
+
+nginx_ssl_email_address: "support@openssl.com"
+
+nginx_ssl_organization_name: "Ansible Computing"
+ 
+nginx_ssl_dir: "/etc/pki/nginx"
+
+nginx_ssl_private_dir: "/etc/pki/nginx/private"
 
 nginx_ssl_generate_self_signed_certs: true
+
+nginx_ssl_override_filename: localhost
+
+#
+nginx_httpd_can_network_connect_enabled: true

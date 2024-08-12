@@ -1,11 +1,14 @@
 - name: Patch | set_fact for stigman watcher scope query
   set_fact:
     user_read_query: "[?name=='stig-manager:user:read'].id"
-  
+  tags:
+    - always
+
 - name: Patch | Set_fact for stigman watcher id
   set_fact:
     user_read_client_scope: "{{ default_existing_scopes.json | json_query(user_read_query) | first }}"
-
+  tags:
+    - always
 
 ##  /admin/realms/{realm}/clients/{client-uuid}/default-client-scopes/{clientScopeId}
 - name: "Update User Password"
@@ -20,7 +23,11 @@
     headers:
       Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
   register: keycloak_user
+  tags:
+    - always
 
 - name: Output Transport Zone ID on Screen
   debug:
     msg: "{{ keycloak_user }}"
+  tags:
+    - always

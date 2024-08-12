@@ -7,10 +7,16 @@
     mode: '0644'
   vars:
     bootstrapped: true
+  tags:
+    - keyclaok
 
 - name: Re-read custom facts
   ansible.builtin.setup:
     filter: ansible_local
+  tags:
+    - keyclaok
 
 - name: Ensure that `KEYCLOAK_ADMIN[_PASSWORD]` get purged
   ansible.builtin.include_tasks: systemd.yml
+  tags:
+    - keyclaok

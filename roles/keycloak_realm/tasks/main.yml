@@ -10,6 +10,8 @@
   until: keycloak_auth_response.status == 200
   retries: 5
   delay: 3
+  tags:
+    - always
 
 - name: "Determine if realm exists"
   ansible.builtin.uri:
@@ -22,6 +24,8 @@
       Accept: "application/json"
       Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
   register: keycloak_realm_exists
+  tags:
+    - always
 
 - name: Create Realm
   ansible.builtin.uri:
@@ -34,3 +38,5 @@
       Authorization: "Bearer {{ keycloak_auth_response.json.access_token }}"
     status_code: 201
   when: keycloak_realm_exists.status == 404
+  tags:
+    - always

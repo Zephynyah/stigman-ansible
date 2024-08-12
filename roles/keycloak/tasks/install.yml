@@ -9,12 +9,16 @@
       - keycloak_download_url is defined
       - keycloak_version is defined
     quiet: true
+  tags:
+    - keyclaok
 
 - name: Check for an existing deployment
   become: true
   ansible.builtin.stat:
     path: "{{ keycloak.home }}"
   register: existing_deploy
+  tags:
+    - keyclaok
 
 - name: "Create {{ keycloak.service_name }} service user/group"
   become: true
@@ -23,6 +27,8 @@
     home: /opt/keycloak
     system: true
     create_home: false
+  tags:
+    - keyclaok
 
 - name: "Create {{ keycloak.service_name }} install location"
   become: true
@@ -32,6 +38,8 @@
     owner: "{{ keycloak.service_user }}"
     group: "{{ keycloak.service_group }}"
     mode: '0750'
+  tags:
+    - keyclaok
 
 - name: Create directory for ansible custom facts
   become: true
@@ -39,17 +47,23 @@
     state: directory
     recurse: true
     path: /etc/ansible/facts.d
+  tags:
+    - keyclaok
 
 ## check remote archive
 - name: Set download archive path
   ansible.builtin.set_fact:
     archive: "{{ keycloak_dest }}/{{ keycloak.bundle }}"
+  tags:
+    - keyclaok
 
 - name: Check download archive path
   become: true
   ansible.builtin.stat:
     path: "{{ archive }}"
   register: archive_path
+  tags:
+    - keyclaok
 
 ## download to controller
 - name: Check local download archive path
@@ -59,6 +73,8 @@
   delegate_to: localhost
   run_once: true
   become: false
+  tags:
+    - keyclaok
 
 - name: Download keycloak archive
   ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
@@ -74,6 +90,8 @@
     - not archive_path.stat.exists
     - not keycloak.offline_install
     - not rhbk_enable is defined or not rhbk_enable
+  tags:
+    - keyclaok
 
 - name: Check downloaded archive
   ansible.builtin.stat:
@@ -82,6 +100,8 @@
   delegate_to: localhost
   become: false
   run_once: true
+  tags:
+    - keyclaok
 
 ## copy and unpack
 - name: Copy archive to target nodes
@@ -97,12 +117,16 @@
     - local_archive_path.stat is defined
     - local_archive_path.stat.exists
   become: true
+  tags:
+    - keyclaok
 
 - name: "Check target directory: {{ keycloak.home }}/bin/"
   ansible.builtin.stat:
     path: "{{ keycloak.home }}/bin/"
   register: path_to_workdir
   become: true
+  tags:
+    - keyclaok
 
 - name: "Extract Keycloak archive on target" # noqa no-handler need to run this here
   ansible.builtin.unarchive:
@@ -117,12 +141,16 @@
     - (not path_to_workdir.stat.exists) or new_version_downloaded.changed
   notify:
     - restart keycloak
+  tags:
+    - keyclaok
 
 - name: Inform decompression was not executed
   ansible.builtin.debug:
     msg: "{{ keycloak.home }} already exists and version unchanged, skipping decompression"
   when:
     - (not new_version_downloaded.changed) and path_to_workdir.stat.exists
+  tags:
+    - keyclaok
 
 - name: "Copy private key to target"
   ansible.builtin.copy:
@@ -136,6 +164,8 @@
     - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
     - keycloak_key_file_copy_enabled is defined and keycloak_key_file_copy_enabled
     - keycloak_key_content | length > 0
+  tags:
+    - keyclaok
 
 - name: "Copy certificate to target"
   ansible.builtin.copy:
@@ -149,13 +179,16 @@
     - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
     - keycloak_cert_file_copy_enabled is defined and keycloak_cert_file_copy_enabled
     - keycloak_cert_file_src | length > 0
+  tags:
+    - keyclaok
 
 - name: "Install {{ keycloak_jdbc_engine }} JDBC driver"
   ansible.builtin.include_tasks: jdbc_driver.yml
   when:
     - rhbk_enable is defined and rhbk_enable
     - keycloak_default_jdbc[keycloak_jdbc_engine].driver_jar_url is defined
-
+  tags:
+    - keyclaok
 
 - name: Ensure required folder structure for policies exists
   ansible.builtin.file:
@@ -166,6 +199,8 @@
     mode: '0750'
   become: true
   loop: "{{ keycloak_supported_policy_types }}"
+  tags:
+    - keyclaok
 
 - name: "Install custom policies"
   ansible.builtin.get_url:
@@ -178,3 +213,6 @@
   loop: "{{ keycloak_policies }}"
   when: item.url is defined and item.url | length > 0
   notify: "restart keycloak"
+  tags:
+    - keyclaok
+

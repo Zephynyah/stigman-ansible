@@ -4,6 +4,8 @@
   vars:
     packages_list:
       - firewalld
+  tags:
+    - keyclaok
 
 - name: Enable and start the firewalld service
   become: true
@@ -11,6 +13,8 @@
     name: firewalld
     enabled: true
     state: started
+  tags:
+    - keyclaok
 
 - name: "Configure firewall for {{ keycloak.service_name }} ports"
   become: true
@@ -23,3 +27,5 @@
     - "{{ keycloak_http_port }}/tcp"
     - "{{ keycloak_https_port }}/tcp"
     - "{{ keycloak_jgroups_port }}/tcp"
+  tags:
+    - keyclaok

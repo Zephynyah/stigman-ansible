@@ -4,3 +4,5 @@
   when: keycloak_configure_iptables
   tags:
     - firewall
+  tags:
+    - keyclaok

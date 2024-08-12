@@ -4,3 +4,4 @@
   when: keycloak_configure_firewalld
   tags:
     - firewall
+    - keyclaok
