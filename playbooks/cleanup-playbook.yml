@@ -59,6 +59,7 @@
       with_items:
         - /etc/mysql 
         - /var/lib/mysql 
+        - /data/mysql
 
     - name: Ensure absence of kecloak
       become: true

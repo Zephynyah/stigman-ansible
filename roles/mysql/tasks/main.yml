@@ -97,12 +97,20 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
   with_items:
-    - { section: "mysqld", option: "sort_buffer_size", value: "{{ mysql_sort_buffer_size | default('256KB') }}" }
-    - { section: "mysqld", option: "innodb_buffer_pool_size", value: "{{ mysql_innodb_buffer_pool_size | default('128M') }}" }
+    - { section: "mysqld", option: "sort_buffer_size", value: "{{ mysql.sort_buffer_size }}" }
+    - { section: "mysqld", option: "innodb_buffer_pool_size", value: "{{ mysql.innodb_buffer_pool_size }}" }
   become: true
   notify:
     - restart mysql
   tags:
+    - mysql
+
+- name: Include datadir tasks
+  ansible.builtin.include_tasks: datadir.yml
+  when:
+   - mysql_data_dir != '/var/lib/mysql'
+  tags:
+    - datadir
     - mysql
 
 - name: Ensure mysql port is open

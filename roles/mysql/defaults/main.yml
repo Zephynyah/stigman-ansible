@@ -22,6 +22,8 @@ mysql_root_pass: ""
 # RHEL MySQL Data Directory to use
 mysql_data_dir: /var/lib/mysql
 
+mysql_mycnf: /etc/my.cnf
+
 # List of prerequsite packages to install for MySQL"
 mysql_prereq_package_list: [ mysql-server ]
 
@@ -33,4 +35,7 @@ mysql_sort_buffer_size: 64M
 mysql_innodb_buffer_pool_size: 2G
 
 
-
+# Client
+mysql_client_port: 3306 
+mysql_client_cnf: /etc/my.cnf.d/client.cnf
+mysql_server_cnf: /etc/my.cnf.d/mysql-server.cnf

@@ -1,0 +1,8 @@
+---
+mysql:
+  socket: "{{ mysql_data_dir }}/mysql.sock"
+  client_port: "{{ mysql_client_port | default(3306) }}"
+  client_cnf: "{{ mysql_client_cnf | default('{{ mysql_mycnf }}') }}"
+  server_cnf: "{{ mysql_server_cnf | default('{{ mysql_mycnf }}') }}"
+  sort_buffer_size: "{{ mysql_sort_buffer_size  | default('256KB') }}" 
+  innodb_buffer_pool_size: "{{ mysql_innodb_buffer_pool_size | default('128M') }}" 

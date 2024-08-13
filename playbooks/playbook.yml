@@ -7,6 +7,8 @@
   vars:
     server_hostname: "{{ ansible_facts['hostname'] | default('localhost') }}"
     offline_install: true
+    mysql_stigman_password: "Password123!"
+    stigman_admin_password: "Password123!"
 
   #vars_prompt:
      #- name: stigman_admin_password
@@ -21,9 +23,8 @@
       vars:
         # mysql_user_name: stigman
         # mysql_database_name: stigman
-        # mysql_data_dir:
-        # mysql_user_password: "{{ mysql_stigman_password }}"
-        mysql_user_password: "Password123!"
+        mysql_data_dir: /data/mysql
+        mysql_user_password: "{{ mysql_stigman_password }}"
       tags:
         - mysql
         
@@ -31,8 +32,7 @@
       include_role:
         name: keycloak
       vars:
-        #keycloak_admin_pass: "{{ stigman_admin_password }}"
-        keycloak_admin_pass: "Password123!"
+        keycloak_admin_pass: "{{ stigman_admin_password }}"
         keycloak_offline_install: "{{ offline_install }}"
         keycloak_hostname_backchannel_dynamic: true
         keycloak_hostname_strict: false
@@ -44,8 +44,7 @@
       include_role:
         name: keycloak_realm
       vars:
-        # keycloak_admin_pass: "{{ stigman_admin_password }}"
-        keycloak_admin_pass: "Password123!"
+        keycloak_admin_pass: "{{ stigman_admin_password }}"
         keycloak_offline_install: true
       tags:
         - keycloak_realm
@@ -55,7 +54,7 @@
         name: nginx
       vars:
         #nginx_ssl_dir: "/etc/pki/nginx"
-        #nginx_site_name: "eh-stigman-1"
+        nginx_site_name: "eh-stigman-1"
         nginx_ssl_generate_self_signed_certs: true
       tags:
         - nginx
@@ -71,9 +70,7 @@
         stigman_db_user: stigman
         stigman_seed_db_enabled: true
         stigman_offline_install: "{{ offline_install }}"
-
-        # stigman_db_password: "{{ mysql_stigman_password }}"
-        stigman_db_password: "Password123!"
+        stigman_db_password: "{{ mysql_stigman_password }}"
 
         ## Customize 
         # stigman_client_welcome_image:

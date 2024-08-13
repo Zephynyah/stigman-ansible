@@ -1,0 +1,129 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - mysql_root_username is defined
+      - mysql_root_pass is defined
+      - mysql.socket is defined
+      - mysql.client_port is defined
+      - mysql.client_cnf is defined
+      - mysql.server_cnf is defined
+    quiet: true
+  tags:
+    - mysql
+
+- name: MySQL | Apply configuaration to avoid mysqld password prompt
+  ini_file:
+    path: "{{ mysql.client_cnf }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "client", option: "user", value: "{{ mysql_root_username }}" }
+    - { section: "client", option: "password", value: "{{ mysql_root_pass }}" }
+  become: true
+  notify:
+    - restart mysql
+
+- name: MySQL | Ensure service is started
+  become: true
+  ansible.builtin.systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: MySQL | Create new data directories
+  ansible.builtin.file:
+    path: "{{ mysql_data_dir }}"
+    owner: mysql
+    group: mysql
+    mode: 0751
+    state: directory
+  register: new_datadir  
+
+- name: MySQL | Identify the current MySQL Data directory
+  ansible.builtin.command: mysql -u root -e "SELECT @@datadir;"
+  register: old_data_dir  
+
+- name: MySQL | Ensure service is stopped
+  become: true
+  ansible.builtin.systemd:
+    name: mysqld
+    state: stopped
+    enabled: false
+  register: mysql_state
+
+- name: MySQL | Stat old data directory
+  ansible.builtin.stat:
+    path: "{{ old_data_dir.stdout_lines[1] }}"
+  register: stat_old_data_dir
+
+- name: MySQL | Stat new data directory
+  ansible.builtin.stat:
+    path: "{{ mysql_data_dir }}"
+  register: stat_new_data_dir
+
+- name: "MySQL | Synchronizating {{ stat_old_data_dir.stat.path }} -> {{ mysql_data_dir }}"
+  synchronize:
+    src: "{{ stat_old_data_dir.stat.path }}"
+    dest: "{{ mysql_data_dir }}"
+    checksum: true
+    times: true
+  when:
+    - stat_old_data_dir.stat.exists
+    - stat_new_data_dir.stat.exists  
+    - mysql_state.state == 'stopped'
+  register: synchronized
+  tags:
+    - mysql
+
+- name: "MySQL | Allow MySQL to modify files in {{ mysql_data_dir }}"
+  sefcontext:
+    target: "{{ mysql_data_dir }}(/.*)?"
+    setype: mysqld_db_t
+    state: present
+  when:
+    - synchronized.rc  == 0
+  tags:
+    - mysql
+
+- name: MySQL | Apply new SELinux file context to filesystem
+  ansible.builtin.command: restorecon -R "{{ mysql_data_dir }}" 
+  when:
+    - synchronized.rc  == 0
+  tags:
+    - mysql
+
+- name: MySQL | Apply configuration for new data directory
+  become: true
+  ini_file:
+    path: "{{ item.path }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { path: "{{ mysql.server_cnf }}", section: "mysqld", option: "datadir", value: "{{ mysql_data_dir }}" }
+    - { path: "{{ mysql.server_cnf }}", section: "mysqld", option: "socket", value: "{{ mysql.socket }}" }
+    - { path: "{{ mysql.client_cnf }}", section: "client", option: "port", value: "{{ mysql.client_port }}" }
+    - { path: "{{ mysql.client_cnf }}", section: "client", option: "socket", value: "{{ mysql.socket }}" }
+  when:
+    - synchronized.rc  == 0
+  notify:
+    - restart mysql
+  tags:
+    - mysql
+
+- name: MySQL | Remove configuaration to avoid mysqld password prompt
+  become: true
+  ini_file:
+    path: "{{ mysql.client_cnf }}"
+    state: absent
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+  with_items:
+    - { section: "client", option: "user" }
+    - { section: "client", option: "password" }
+
+
+- name: MySQL | Flush handlers
+  meta: flush_handlers
