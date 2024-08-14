@@ -1,0 +1,6 @@
+[stigman]
+eh-stigman-1
+
+
+[stigman:vars]
+ansible_ssh_user=admin
