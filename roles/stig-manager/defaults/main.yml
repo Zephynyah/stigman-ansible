@@ -10,7 +10,7 @@ stigman_installdir: "{{ stigman_dest }}/stig-manager-{{ stigman_version }}"
 stigman_offline_install: false
 
 # Seed
-stigman_seed_db_enabled: false
+stigman_seed_db_enabled: true
 stigman_seed_db_dump: "{{ role_path }}/templates/stigman.sql"
 
 ### Install location and service settings
@@ -26,7 +26,7 @@ stigman_service_restartsec: "10s"
 stigman_log_file: "{{ stigman_home }}/logs/stigman.log"
 stigman_config_file: "{{ stigman_home }}/stig-manager.sh"
 
-stigman_hostname: "localhost"
+stigman_hostname: "{{ ansible_hostname | d('localhost')}}"
 stigman_http_context: "/"
 stigman_api_port: 54000 
 
@@ -39,7 +39,7 @@ stigman_restart_health_check_delay: 3
 ### Required Configuration
 
 #
-stigman_classification: U
+stigman_classification: "U"
 stigman_oidc_provider: "http://localhost:8080/realms/stigman"   
 stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_context }}{{ '/' if stigman_http_context | length > 1 else '' }}realms/stigman }}"
 

@@ -1,11 +1,10 @@
 ---
 - name: Start STIG Manager intallation playbooks
-  hosts: localhost
+  hosts: stigman
   gather_facts: true
   become: yes
   become_method: sudo
   vars:
-    server_hostname: "{{ ansible_facts['hostname'] | default('localhost') }}"
     offline_install: true
     mysql_stigman_password: "Password123!"
     stigman_admin_password: "Password123!"
@@ -23,7 +22,7 @@
       vars:
         # mysql_user_name: stigman
         # mysql_database_name: stigman
-        mysql_data_dir: /data/mysql
+        #mysql_data_dir: /data/mysql ###### Broken
         mysql_user_password: "{{ mysql_stigman_password }}"
       tags:
         - mysql
@@ -53,8 +52,6 @@
       include_role:
         name: nginx
       vars:
-        #nginx_ssl_dir: "/etc/pki/nginx"
-        nginx_site_name: "eh-stigman-1"
         nginx_ssl_generate_self_signed_certs: true
       tags:
         - nginx
@@ -65,7 +62,6 @@
       include_role:
         name: stig-manager
       vars:
-        stigman_hostname: 'eh-stigman-1'
         stigman_classification: 'U'
         stigman_db_user: stigman
         stigman_seed_db_enabled: true
@@ -92,5 +88,14 @@
         - stigman-watcher
         - watcher
 
-
-
+    - name: Ensure all services are restarted
+      become: true
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: restarted
+        daemon_reload: true
+      with_items:
+        - mysqld
+        - keycloak
+        - nginx

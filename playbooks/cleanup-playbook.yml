@@ -1,6 +1,6 @@
 ---
 - name: Clean server installation
-  hosts: localhost
+  hosts: stigman
   gather_facts: true
   become: yes
   become_method: sudo  
@@ -60,6 +60,7 @@
         - /etc/mysql 
         - /var/lib/mysql 
         - /data/mysql
+        - /tmp/stigman.sql
 
     - name: Ensure absence of kecloak
       become: true

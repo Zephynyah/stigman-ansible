@@ -4,21 +4,44 @@
   ansible.builtin.stat:
     path: "{{ stigman_seed_db_dump }}"
   register: seed_db_dump
+  delegate_to: localhost
   tags:
     - stig-manager
     - seed
+
+- name: Set "tmp" download  path
+  ansible.builtin.set_fact:
+    tmp_db_dump: "/tmp/stigman.sql"
+  tags:
+    - stig-manager
+
+- name: Copy "sql" file onto remote machine
+  ansible.builtin.copy:
+    src: "{{ stigman_seed_db_dump }}"
+    dest: "{{ tmp_db_dump }}"
+  register: tmp_seed_downloaded
+  tags:
+    - stig-manager
+
+- name: Check download path
+  become: true
+  ansible.builtin.stat:
+    path: "{{ tmp_db_dump }}"
+  register: tmp_db_dump_path
+  tags:
+    - stig-manager
 
 - name: Insert seed data into stigman database
   mysql_db:
     state: import
     name: "{{ stigman_db_schema }}"
-    target: "{{ stigman_seed_db_dump }}"
+    target: "{{ tmp_db_dump }}"
     login_user: "{{ stigman_db_user }}"
     login_password: "{{ stigman_db_password }}"
+  #no_log: true
   when:
-    - stigman_seed_db_enabled is defined and stigman_seed_db_enabled
-    - seed_db_dump.stat.exists
     - stigman_db_schema == "stigman"
+    - tmp_db_dump_path.stat.exists
   tags:
     - stig-manager
     - seed

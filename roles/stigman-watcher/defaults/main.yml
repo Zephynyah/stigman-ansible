@@ -27,7 +27,7 @@ stigman_watcher_service_restart_on_failure: true
 stigman_watcher_service_restartsec: "60s"
 stigman_watcher_config_file: "{{ stigman_watcher_home }}/.env"
 
-stigman_watcher_hostname: localhost
+stigman_watcher_hostname: "{{ ansible_hostname | d('localhost') }}"
 stigman_watcher_http_port: 8080
 stigman_watcher_force_health_check: true    #depecated - stigman_watcher_health_check_enabled
 stigman_watcher_health_check_url_path:

@@ -11,38 +11,54 @@
     - nginx
     - openssl
 
-- name: Generate an OpenSSL private key
-  openssl_privatekey:
-    force: true
-    path: "{{ nginx.key_file }}"
-    size: "{{ nginx.key_size }}"
-    type: "{{ nginx.key_type }}"
-    backup: yes
+- name: Ensure absence old files if exists
+  become: true
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ nginx.key_file }}" 
+    - "{{ nginx.csr_file }}" 
+    - "{{ nginx.crt_file  }}" 
   tags:
     - nginx
     - openssl
 
-- name: Generate an OpenSSL Certificate Signing Request with Subject information
-  openssl_csr:
-    force: true
-    path: "{{ nginx.csr_file }}"
-    privatekey_path: "{{ nginx.key_file }}"
-    country_name: "{{ nginx.ssl.country_name }}"
-    organization_name: "{{ nginx.ssl.organization_name }}"
-    email_address: "{{ nginx.ssl.email_address }}"
-    common_name: "{{ nginx.ssl.common_name }}"
+- name: Generate RSA Key
+  command: >
+      openssl 
+      genrsa  
+      -out "{{ nginx.key_file }}" 
+      2048
+  args:
+    creates: "{{ nginx.key_file }}"
   tags:
     - nginx
     - openssl
 
-- name: Generate a Self Signed OpenSSL certificate
-  openssl_certificate:
-    provider: selfsigned
-    selfsigned_not_after: "+3650d"
-    force: true
-    path: "{{ nginx.crt_file }}"
-    privatekey_path: "{{ nginx.key_file }}"
-    csr_path: "{{ nginx.csr_file }}"
+- name: Generate CSR (Used to create Company signed Key)
+  command: >
+    openssl req 
+    -new 
+    -subj "/C=US/ST=CT/L=East Hartford/O={{nginx.ssl.organization_name}}/CN={{nginx.ssl.common_name}}"
+    -key "{{ nginx.key_file }}"
+    -out "{{ nginx.csr_file }}"
+  args:
+    creates: "{{ nginx.csr_file }}"
+  tags:
+    - nginx
+    - openssl
+
+- name: Generate Self-signed Certificate
+  command: >
+    openssl req 
+    -x509 
+    -days 3650 
+    -key "{{ nginx.key_file }}"
+    -in "{{ nginx.csr_file }}"
+    -out "{{ nginx.crt_file }}"
+  args:
+    creates: "{{ nginx.crt_file }}"
   tags:
     - nginx
     - openssl
