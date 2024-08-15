@@ -7,24 +7,23 @@ Install [keycloak](https://keycloak.org/) >= 20.0.0 (quarkus) server configurati
 Requirements
 ------------
 
-This role requires the `python3-netaddr` and `lxml` library installed on the controller node.
+Manual DownLoad 
 
-* to install via yum/dnf: `dnf install python3-netaddr python3-lxml`
-* to install via apt: `apt install python3-netaddr python3-lxml`
-* or via the collection: `pip install -r requirements.txt`
+```sh
+curl -OL https://github.com/keycloak/keycloak/releases/download/24.0.4/keycloak-24.0.4.tar.gz
+```
 
+`*` The `keycloak-24.0.4.tar.gz` file must be available and located in the root path from which ansible is called.
 
 Dependencies
 ------------
+- java-17-openjdk-headless
+- unzip
+- procps-ng
+- initscripts
+- tzdata-java
 
-The roles depends on:
-
-* [middleware_automation.common](https://github.com/ansible-middleware/common)
-* [ansible-posix](https://docs.ansible.com/ansible/latest/collections/ansible/posix/index.html)
-
-To install all the dependencies via galaxy:
-
-    ansible-galaxy collection install -r requirements.yml
+`*` Playbook installs all the dependencies at runtine.
 
 Role Defaults
 -------------
@@ -34,8 +33,8 @@ Role Defaults
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 |`keycloak_version`| keycloak.org package version | `24.0.4` |
-|`keycloak_offline_install` | Perform an offline install | `False`|
-|`keycloak_dest`| Installation root path | `/opt/keycloak` |
+|`keycloak_offline_install` | Perform an offline install | `True`|
+|`keycloak_dest`| Installation root path | `/opt` |
 |`keycloak_download_url` | Download URL for keycloak | `https://github.com/keycloak/keycloak/releases/download/{{ keycloak_version }}/{{ keycloak_archive }}` |
 
 
@@ -50,7 +49,6 @@ Role Defaults
 |`keycloak_path`| This should be set if proxy uses a different context-path for Keycloak | |
 |`keycloak_http_port`| HTTP listening port | `8080` |
 |`keycloak_https_port`| TLS HTTP listening port | `8443` |
-|`keycloak_ajp_port`| AJP port | `8009` |
 |`keycloak_service_user`| Posix account username | `keycloak` |
 |`keycloak_service_group`| Posix account group | `keycloak` |
 |`keycloak_service_restart_always`| systemd restart always behavior activation | `False` |
@@ -75,37 +73,9 @@ Role Defaults
 |`keycloak_cert_file_src`| Set the source file path | `""` |
 |`keycloak_cert_file`| The file path to a server certificate or certificate chain in PEM format | `/etc/pki/tls/certs/server.crt.pem` |
 |`keycloak_https_key_store_enabled`| Enable configuration of HTTPS via a key store | `False` |
-|`keycloak_key_store_file`| Deprecated, use `keycloak_https_key_store_file` instead. ||
-|`keycloak_key_store_password`| Deprecated, use `keycloak_https_key_store_password` instead.||
-|`keycloak_https_key_store_file`| The file path to the key store | `{{ keycloak.home }}/conf/key_store.p12` |
-|`keycloak_https_key_store_password`| Password for the key store | `""` |
-|`keycloak_https_trust_store_enabled`| Enable configuration of the https trust store | `False` |
-|`keycloak_https_trust_store_file`| The file path to the trust store | `{{ keycloak.home }}/conf/trust_store.p12` |
-|`keycloak_https_trust_store_password`| Password for the trust store | `""` |
 |`keycloak_proxy_headers`| Parse reverse proxy headers (`forwarded` or `xforwarded`) | `""` |
-|`keycloak_config_key_store_file`| Path to the configuration key store; only used if `keycloak_keystore_password` is not empty  | `{{ keycloak.home }}/conf/conf_store.p12` if `keycloak_keystore_password != ''`, else `''` |
-|`keycloak_config_key_store_password`| Password of the configuration keystore; if non-empty, `keycloak_db_pass` will be saved to the keystore at `keycloak_config_key_store_file` instead of being written to the configuration file in clear text | `""` |
 |`keycloak_configure_firewalld` | Ensure firewalld is running and configure keycloak ports | `False` |
-
-
-#### High-availability
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_ha_enabled`| Enable auto configuration for database backend, clustering and remote caches on infinispan | `False` |
-|`keycloak_ha_discovery`| Discovery protocol for HA cluster members | `TCPPING` |
-|`keycloak_db_enabled`| Enable auto configuration for database backend | `True` if `keycloak_ha_enabled` is True, else `False` |
-|`keycloak_jgroups_port`| jgroups cluster tcp port | `7800` |
-|`keycloak_systemd_wait_for_port` | Whether systemd unit should wait for keycloak port before returning | `{{ keycloak_ha_enabled }}` |
-|`keycloak_systemd_wait_for_port_number`| Which port the systemd unit should wait for | `{{ keycloak_https_port }}` |
-|`keycloak_systemd_wait_for_log` | Whether systemd unit should wait for service to be up in logs | `false` |
-|`keycloak_systemd_wait_for_timeout`| How long to wait for service to be alive (seconds) | `60` |
-|`keycloak_systemd_wait_for_delay`| Activation delay for service systemd unit (seconds) | `10` |
-|`keycloak_restart_strategy`| Strategy task file for restarting in HA (one of provided restart/['serial.yml','none.yml','serial_then_parallel.yml']) or path to file when providing custom strategy | `restart/serial.yml` |
-|`keycloak_restart_health_check`| Whether to wait for successful health check after restart | `true` |
-|`keycloak_restart_health_check_delay`| Seconds to let pass before starting healch checks | `10` |
-|`keycloak_restart_health_check_reries`| Number of attempts for successful health check before failing | `25` |
-|`keycloak_restart_pause`| Seconds to wait between restarts in HA strategy | `15` |
+|`keycloak_configure_iptables` | Ensure iptables is configured for keycloak ports | `False` |
 
 
 #### Hostname configuration
@@ -115,30 +85,6 @@ Role Defaults
 |`keycloak_http_relative_path`| Set the path relative to / for serving resources. The path must start with a / | `/` |
 |`keycloak_hostname_strict`| Disables dynamically resolving the hostname from request headers | `true` |
 |`keycloak_hostname_strict_backchannel`| By default backchannel URLs are dynamically resolved from request headers to allow internal and external applications. If all applications use the public URL this option should be enabled. | `false` |
-
-
-#### Database configuration
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_jdbc_engine` | Database engine [mariadb,postres,mssql] | `postgres` |
-|`keycloak_db_user` | User for database connection | `keycloak-user` |
-|`keycloak_db_pass` | Password for database connection | `keycloak-pass` |
-|`keycloak_jdbc_url` | JDBC URL for connecting to database | `jdbc:postgresql://localhost:5432/keycloak` |
-|`keycloak_jdbc_driver_version` | Version for JDBC driver | `9.4.1212` |
-
-
-#### Remote caches configuration
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_ispn_user` | Username for connecting to infinispan | `supervisor` |
-|`keycloak_ispn_pass` | Password for connecting to infinispan | `supervisor` |
-|`keycloak_ispn_hosts` | host name/port for connecting to infinispan, eg. host1:11222;host2:11222 | `localhost:11222` |
-|`keycloak_ispn_sasl_mechanism` | Infinispan auth mechanism | `SCRAM-SHA-512` |
-|`keycloak_ispn_use_ssl` | Whether infinispan uses TLS connection | `false` |
-|`keycloak_ispn_trust_store_path` | Path to infinispan server trust certificate | `/etc/pki/java/cacerts` |
-|`keycloak_ispn_trust_store_password` | Password for infinispan certificate keystore | `changeit` |
 
 
 #### Miscellaneous configuration
@@ -170,72 +116,6 @@ Role Defaults
 |`keycloak_show_deprecation_warnings`| Whether deprecation warnings should be shown | `True` |
 
 
-#### Vault SPI
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_ks_vault_enabled`| Whether to enable the vault SPI | `false` |
-|`keycloak_ks_vault_file`| The keystore path for the vault SPI | `{{ keycloak_config_dir }}/keystore.p12` |
-|`keycloak_ks_vault_type`| Type of the keystore used for the vault SPI | `PKCS12` |
-
-
-#### Configuring providers
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_providers`| List of provider definitions; see below | `[]` |
-
-Providers support different sources:
-
-* `url`: http download for providers not requiring authentication
-* `maven`: maven download for providers hosted publicly on Apache Maven Central or private Maven repositories like Github Maven requiring authentication
-* `local_path`: static providers to be uploaded
-
-Provider definition:
-
-```yaml
-keycloak_providers:
-  - id: http-client                         # required; "{{ id }}.jar" identifies the file name on RHBK
-    spi: connections                        # required if neither url, local_path nor maven are specified; required for setting properties
-    default: true                           # optional, whether to set default for spi, default false
-    restart: true                           # optional, whether to restart, default true
-    url: https://.../.../custom_spi.jar     # optional, url for download via http
-    local_path: my_theme_spi.jar            # optional, path on local controller for SPI to be uploaded
-    maven:                                  # optional, for download using maven
-      repository_url: https://maven.pkg.github.com/OWNER/REPOSITORY # optional, maven repo url
-      group_id:  my.group                   # optional, maven group id
-      artifact_id: artifact                 # optional, maven artifact id
-      version: 24.0.4                       # optional, defaults to latest
-      username:  user                       # optional, cf. https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-to-github-packages
-      password: pat                         # optional, provide a PAT for accessing Github's Apache Maven registry
-    properties:                             # optional, list of key-values
-      - key: default-connection-pool-size
-        value: 10
-```
-
-the definition above will generate the following build command:
-
-```
-bin/kc.sh build --spi-connections-provider=http-client --spi-connections-http-client-default-connection-pool-size=10
-```
-
-
-#### Configuring policies
-
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-|`keycloak_policies`| List of policy definitions; see below | `[]` |
-
-Provider definition:
-
-```yaml
-keycloak_policies:
-  - name: xato-net-10-million-passwords.txt                                                                # required, resulting file name
-    url: https://github.com/danielmiessler/SecLists/raw/master/Passwords/xato-net-10-million-passwords.txt # required, url for download
-    type: password-blacklists                                                                              # optional, defaults to `password-blacklists`; supported values: [`password-blacklists`]
-```
-
-
 Role Variables
 --------------
 
@@ -244,14 +124,6 @@ Role Variables
 |`keycloak_admin_pass`| Password of console admin account | `yes` |
 |`keycloak_frontend_url`| Base URL for frontend URLs, including scheme, host, port and path | `no` |
 |`keycloak_admin_url`| Base URL for accessing the administration console, including scheme, host, port and path | `no` |
-|`keycloak_ks_vault_pass`| The password for accessing the keystore vault SPI | `no` |
-|`keycloak_alternate_download_url`| Alternate location with optional authentication for downloading RHBK | `no` |
-|`keycloak_download_user`| Optional username for http authentication  | `no*` |
-|`keycloak_download_pass`| Optional password for http authentication | `no*` |
-|`keycloak_download_validate_certs`| Whether to validate certs for URL `keycloak_alternate_download_url` | `no` |
-|`keycloak_jdbc_download_user`| Optional username for http authentication | `no*` |
-|`keycloak_jdbc_download_pass`| Optional password for http authentication | `no*` |
-|`keycloak_jdbc_download_validate_certs`| Whether to validate certs for URL `keycloak_download_validate_certs` | `no` |
 
 `*` username/password authentication credentials must be both declared or both undefined
 
@@ -265,13 +137,3 @@ The role uses the following [custom facts](https://docs.ansible.com/ansible/late
 |:---------|:------------|
 |`general.bootstrapped` | A custom fact indicating whether this role has been used for bootstrapping keycloak on the respective host before; set to `false` (e.g., when starting off with a new, empty database) ensures that the initial admin user as defined by `keycloak_admin_user[_pass]` gets created |
 
-License
--------
-
-Apache License 2.0
-
-
-Author Information
-------------------
-
-* [Guido Grazioli](https://github.com/guidograzioli)
