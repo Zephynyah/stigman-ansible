@@ -10,8 +10,8 @@ stigman_installdir: "{{ stigman_dest }}/stig-manager-{{ stigman_version }}"
 stigman_offline_install: false
 
 # Seed
-stigman_seed_db_enabled: true
-stigman_seed_db_dump: "{{ role_path }}/templates/stigman.sql"
+stigman_db_seed_enabled: true
+stigman_db_dump_file: /tmp/stigman.sql
 
 ### Install location and service settings
 stigman_dest: /opt
@@ -37,13 +37,12 @@ stigman_restart_health_check_reries: 5
 stigman_restart_health_check_delay: 3
 
 ### Required Configuration
-
-#
+##
 stigman_classification: "U"
 stigman_oidc_provider: "http://localhost:8080/realms/stigman"   
 stigman_client_oidc_provider: "https://{{ stigman_hostname }}{{ stigman_http_context }}{{ '/' if stigman_http_context | length > 1 else '' }}realms/stigman }}"
 
-# DB
+## DB
 stigman_db_user: stigman
 stigman_db_password: ''
 stigman_db_schema: stigman
@@ -69,26 +68,24 @@ stigman_db_schema: stigman
 # stigman_db_host:
 # stigman_db_max_connections:
 # stigman_db_port:
-
 # stigman_db_tls_ca_file:
 # stigman_db_tls_cert_file:
 # stigman_db_tls_key_file:
 
-
 # stigman_docs_directory:
 # stigman_docs_disabled:
+
 # stigman_log_level:
 # stigman_log_mode:
+
 # stigman_jwt_email_claim:
 # stigman_jwt_name_claim:
 # stigman_jwt_privileges_claim:
 # stigman_jwt_scope_claim:
 # stigman_jwt_servicename_claim:
 # stigman_jwt_username_claim:
+
 # stigman_swagger_enabled:
 # stigman_swagger_oidc_provider:
 # stigman_swagger_redirect:
 # stigman_swagger_server:
-
-
- #http://eh-stigman-1:54000/api/op/definition?jsonpath=%24.paths/assets

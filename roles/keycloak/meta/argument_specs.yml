@@ -52,10 +52,6 @@ argument_specs:
                 default: false
                 description: "Ensure firewalld is running and configure keycloak ports"
                 type: "bool"
-            keycloak_configure_iptables:
-                default: false
-                description: "Ensure firewalld is running and configure keycloak ports"
-                type: "bool"
             keycloak_service_restart_always:
                 default: false
                 description: "systemd restart always behavior of service; takes precedence over keycloak_service_restart_on_failure if true"

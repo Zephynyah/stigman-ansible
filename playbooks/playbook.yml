@@ -64,17 +64,12 @@
       vars:
         stigman_classification: 'U'
         stigman_db_user: stigman
-        stigman_seed_db_enabled: true
-        stigman_offline_install: "{{ offline_install }}"
+        stigman_db_seed_enabled: true
         stigman_db_password: "{{ mysql_stigman_password }}"
-
-        ## Customize 
-        # stigman_client_welcome_image:
-        # stigman_client_welcome_link:
-        # stigman_client_welcome_message:
-        # stigman_client_welcome_title:
+        stigman_offline_install: "{{ offline_install }}"
       tags:
         - stig-manager
+        - seed
 
     - name: Include Stigman Watcher
       include_role:
@@ -88,7 +83,7 @@
         - stigman-watcher
         - watcher
 
-    - name: Ensure all services are restarted
+    - name: Ensure services are restarted
       become: true
       ansible.builtin.systemd:
         name: "{{ item }}"

@@ -28,7 +28,6 @@ keycloak_service_restartsec: "30s"
 
 ###
 keycloak_configure_firewalld: false
-keycloak_configure_iptables: false
 
 ### administrator console password
 keycloak_admin_user: admin

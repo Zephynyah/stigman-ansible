@@ -6,10 +6,11 @@
     - prereqs
     - always
 
-- name: Distro specific tasks
-  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
+- name: Include firewall config tasks
+  ansible.builtin.include_tasks: firewalld.yml
+  when: keycloak_configure_firewalld
   tags:
-    - unbound
+    - firewall
     - keyclaok
 
 - name: Include install tasks

@@ -86,7 +86,6 @@ Role Defaults
 |`keycloak_config_key_store_file`| Path to the configuration key store; only used if `keycloak_keystore_password` is not empty  | `{{ keycloak.home }}/conf/conf_store.p12` if `keycloak_keystore_password != ''`, else `''` |
 |`keycloak_config_key_store_password`| Password of the configuration keystore; if non-empty, `keycloak_db_pass` will be saved to the keystore at `keycloak_config_key_store_file` instead of being written to the configuration file in clear text | `""` |
 |`keycloak_configure_firewalld` | Ensure firewalld is running and configure keycloak ports | `False` |
-|`keycloak_configure_iptables` | Ensure iptables is configured for keycloak ports | `False` |
 
 
 #### High-availability

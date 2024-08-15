@@ -125,16 +125,3 @@ The following is an example playbook that makes use of the role to create a real
             keycloak_realm: TestRealm
             keycloak_clients: [...]
 ```
-
-
-License
--------
-
-Apache License 2.0
-
-
-Author Information
-------------------
-
-* [Guido Grazioli](https://github.com/guidograzioli)
-* [Romain Pelisse](https://github.com/rpelisse)
