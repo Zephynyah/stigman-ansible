@@ -61,7 +61,7 @@ Roles
 |`keycloak`| keycloak | Used to install keycloak and all dependencies | `keycloak` |
 |`keycloak_realm`| keycloak_realm | Used to create the starter provided realm | `keycloak_realm` |
 |`nginx`| nginx | Administration console user account | `nginx`, `openssl`, `setsebool` |
-|`stig-manager`| stig-manager |  Used to install stig-manager and all dependencies | `stig-manager1, `seed` |
+|`stig-manager`| stig-manager |  Used to install stig-manager and all dependencies | `stig-manager`, `seed` |
 |`stigman-watcher`| stigman-watcher | Used to install stigman-watcher and all dependencies | `stigman-watcher`, `watcher` |
 
 
