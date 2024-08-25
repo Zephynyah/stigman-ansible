@@ -1,12 +1,12 @@
 ---
 watcher: # noqa var-naming this is an internal dict of interpolated values
-  home: "{{ stigman_watcher_home }}"
-  bundle: "{{ stigman_watcher_archive }}"
-  config_file: "{{ stigman_watcher_config_file }}"
+  home: "{{ watcher_home }}"
+  bundle: "{{ watcher_archive }}"
+  config_file: "{{ watcher_config_file }}"
   service_name: "watcher"
-  health_url: "http://{{ stigman_watcher_hostname }}:{{ stigman_watcher_http_port }}"
-  service_user: "{{ stigman_watcher_service_user }}"
-  service_group: "{{ stigman_watcher_service_group }}"
-  offline_install: "{{ stigman_watcher_offline_install }}"
+  health_url: "http://{{ watcher_hostname }}:{{ watcher_http_port }}"
+  service_user: "{{ watcher_service_user }}"
+  service_group: "{{ watcher_service_group }}"
+  offline_install: "{{ watcher_offline_install }}"
   log:
-    file: "{{ stigman_watcher_home }}/logs/{{ stigman_watcher_log_file }}"
+    file: "{{ watcher_home }}/logs/{{ watcher_log_file }}"

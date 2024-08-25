@@ -16,13 +16,18 @@
      #  prompt: Enter the DB Password for Stigman User
 
   tasks:
+    - command: hostname -f
+      register: result
+      tags:
+        - always
+
     - name: Include MySQL
       include_role:
         name: mysql
       vars:
         # mysql_user_name: stigman
         # mysql_database_name: stigman
-        #mysql_data_dir: /data/mysql ###### Broken
+        #mysql_data_dir: /data/mysql
         mysql_user_password: "{{ mysql_stigman_password }}"
       tags:
         - mysql
@@ -48,17 +53,24 @@
       tags:
         - keycloak_realm
 
-    - name: Include Ngix
+    - name: Include Ngix role
       include_role:
         name: nginx
       vars:
-        nginx_ssl_generate_self_signed_certs: true
+        country: 'US'                           # C
+        state: 'CT'                             # ST
+        locality: 'Trenton'                     # L
+        organization: 'ACME'                    # O
+        organization_unit: 'IT'                 # OU
+        common_name: '{{ ansible_hostname }}'   # CN
+        email_address: 'info@example.com'       # emailAddress
+        nginx_ownca_enabled: true
       tags:
         - nginx
         - openssl
         - setsebool
 
-    - name: Include STIG Manager 
+    - name: Include STIG Manager role
       include_role:
         name: stig-manager
       vars:
@@ -71,17 +83,18 @@
         - stig-manager
         - seed
 
-    - name: Include Stigman Watcher
+    - name: Include Stigman Watcher role
       include_role:
         name: stigman-watcher
       vars:
-        stigman_watcher_add_existing: true
-        stigman_watcher_api_base: http://localhost:54000/api
-        stigman_watcher_authority: http://localhost:8080/realms/stigman
-        stigman_watcher_offline_install: "{{ offline_install }}"
+        watcher_add_existing: true
+        watcher_api_base: http://localhost:54000/api
+        watcher_authority: http://localhost:8080/realms/stigman
+        watcher_offline_install: "{{ offline_install }}"
       tags:
         - stigman-watcher
         - watcher
+        - jwt
 
     - name: Ensure services are restarted
       become: true
@@ -93,4 +106,8 @@
       with_items:
         - mysqld
         - keycloak
+        - nginx
+        - stigman
+        - watcher
+      tags:
         - nginx

@@ -3,13 +3,13 @@
   ansible.builtin.assert:
     that:
       - watcher.home is defined
-      - stigman_watcher_service_user is defined
-      - stigman_watcher_dest is defined
-      - stigman_watcher_archive is defined
-      - stigman_watcher_download_url is defined
-      - stigman_watcher_pkg is defined
-      - stigman_watcher_version is defined
-      - stigman_watcher_auth_strategy in ["client_id", "client_key"]
+      - watcher_service_user is defined
+      - watcher_dest is defined
+      - watcher_archive is defined
+      - watcher_download_url is defined
+      - watcher_pkg is defined
+      - watcher_version is defined
+      - watcher_auth_strategy in ["client_id", "client_key"]
     quiet: true
   tags:
     - watcher
@@ -26,7 +26,7 @@
   become: true
   ansible.builtin.user:
     name: "{{ watcher.service_user }}"
-    home: "{{ stigman_watcher_installdir }}"
+    home: "{{ watcher_installdir }}"
     system: true
     create_home: false
   tags:
@@ -35,7 +35,7 @@
 - name: "Create {{ watcher.service_name }} install location"
   become: true
   ansible.builtin.file:
-    dest: "{{ stigman_watcher_installdir }}"
+    dest: "{{ watcher_installdir }}"
     state: directory
     owner: "{{ watcher.service_user }}"
     group: "{{ watcher.service_group }}"
@@ -55,7 +55,7 @@
 ## check remote archive
 - name: Set download archive path
   ansible.builtin.set_fact:
-    archive: "{{ stigman_watcher_dest }}/{{ watcher.bundle }}"
+    archive: "{{ watcher_dest }}/{{ watcher.bundle }}"
   tags:
     - watcher
 
@@ -80,7 +80,7 @@
 
 - name: Download stigman watcher archive
   ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
-    url: "{{ stigman_watcher_download_url }}"
+    url: "{{ watcher_download_url }}"
     dest: "{{ local_path.stat.path }}/{{ watcher.bundle }}"
     mode: '0640'
   delegate_to: localhost
@@ -133,7 +133,7 @@
   ansible.builtin.unarchive:
     remote_src: true
     src: "{{ archive }}"
-    dest: "{{ stigman_watcher_installdir }}"
+    dest: "{{ watcher_installdir }}"
     creates: "{{ watcher.home }}/logs/"
     owner: "{{ watcher.service_user }}"
     group: "{{ watcher.service_group }}"
@@ -158,15 +158,16 @@
   tags:
     - watcher
     - jwt
-  when:
-    - stigman_watcher_auth_strategy == "client_key"
+  #when:
+    #- watcher_auth_strategy == "client_key"
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
   tags:
     - watcher
 
-
+- name: Flush handlers
+  meta: flush_handlers
 
 
 

@@ -12,8 +12,8 @@
 - name: Wait until service becomes active
   ansible.builtin.uri:
     url: "{{ watcher.health_url }}"
-  register: stigman_watcher_status
-  until: stigman_watcher_status.status == 200
+  register: watcher_status
+  until: watcher_status.status == 200
   retries: 5
   delay: 3
   when: internal_force_health_check | default(true)

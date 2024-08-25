@@ -1,24 +1,35 @@
 ---
 nginx_install_service: true
 
+nginx_prereq_package_list: [ nginx, openssl ]
+
 nginx_openssl_conf: "{{ role_path }}/openssl.conf"
 
-nginx_site_name: "eh-stigman-1"
+nginx_site_name: localhost
 
 nginx_siteconf_dir: "/etc/nginx/conf.d"
 
 nginx_ssl_key_size: 4096
-# Others include DSA, ECC, Ed25519, Ed448, X25519, X448
 
 nginx_ssl_key_type: "RSA"
 
 nginx_ssl_country_name: "US" 
 
+nginx_ssl_state_or_province_name: "CT"
+
+nginx_ssl_locality_name: "East Hartford"
+
+nginx_ssl_common_name: "{{ ansible_hostname }}"
+
 nginx_ssl_email_address: "support@openssl.com"
 
 nginx_ssl_organization_name: "Ansible Computing"
+
+nginx_ssl_organizational_unit_name: "Cyber"
  
 nginx_ssl_dir: "/etc/pki/nginx"
+
+nginx_ssl_anchor_dir: "/etc/pki/ca-trust/source/anchors/"
 
 nginx_ssl_private_dir: "/etc/pki/nginx/private"
 
@@ -28,3 +39,49 @@ nginx_ssl_override_filename: localhost
 
 #
 nginx_httpd_can_network_connect_enabled: true
+
+
+# Certifiacte Autority (CA)
+
+nginx_ownca_enabled: true
+ 
+nginx_ownca_country_name: "US" 
+
+nginx_ownca_state_name: "CT"
+
+nginx_ownca_locality_name: "East Hartford"
+
+nginx_ownca_common_name: "Alice Root Certificate Authority"
+
+nginx_ownca_email_address: "alice_root@support.com"
+
+nginx_ownca_organization_name: "Allice Ltd"
+
+nginx_ownca_organizational_unit_name: "Alice Ltd. Root CA"
+
+
+nginx_ownca_passphrase: Password123!
+
+nginx_ownca_not_after: +3650d  # valid for ten years
+    
+nginx_ownca_not_before: "-1d"  # valid since yesterday
+
+nginx_ownca_cipher: auto
+
+nginx_ownca_root_name: "rootCA"
+
+nginx_ownca_dir: /opt/ownca
+
+nginx_ownca_keys_dir: "{{ nginx_ownca_dir }}/keys" 
+
+nginx_ownca_csrs_dir: "{{ nginx_ownca_dir }}/csrs"
+
+nginx_ownca_crts_dir: "{{ nginx_ownca_dir }}/crts"
+
+nginx_ownca_root_key: "{{ nginx_ownca_dir }}/{{ nginx_ownca_root_name }}.key.pem"
+
+nginx_ownca_root_csr: "{{ nginx_ownca_dir }}/{{ nginx_ownca_root_name }}.csr"
+
+nginx_ownca_root_crt: "{{ nginx_ownca_dir }}/{{ nginx_ownca_root_name }}.crt"
+
+

@@ -15,12 +15,12 @@ ExecStart=/bin/bash -c "./stigman-watcher-linuxstatic"
 #User={{ watcher.service_user }}
 #Group={{ watcher.service_group }}
 
-{% if stigman_watcher_service_restart_always %}
+{% if watcher_service_restart_always %}
 Restart=always
-{% elif stigman_watcher_service_restart_on_failure %}
+{% elif watcher_service_restart_on_failure %}
 Restart=on-failure
 {% endif %}
-RestartSec={{ stigman_watcher_service_restartsec }}
+RestartSec={{ watcher_service_restartsec }}
 #SuccessExitStatus=0
 TimeoutStartSec=60s
 TimeoutStopSec=60s

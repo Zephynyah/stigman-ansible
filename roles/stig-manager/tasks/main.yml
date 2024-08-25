@@ -164,6 +164,7 @@
   tags:
     - stig-manager
  
-
+- name: Flush handlers
+  meta: flush_handlers
 
 

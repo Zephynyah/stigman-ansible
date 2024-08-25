@@ -6,118 +6,118 @@ argument_specs:
       		Install all required packages, configure required files and manage services.
     	author: Jason Hickey
         options:
-            stigman_watcher_pkg:
+            watcher_pkg:
                 default: "tar.gz"
                 description: "The extention representing the type of file to lookup|download|unpack"
                 type: "str"
-            stigman_watcher_version:
+            watcher_version:
                 default: "1.4.4"
                 description: "The package version to install"
                 type: "str"
-            stigman_watcher_archive:
-                default: "stigman-watcher-linux-{{ stigman_watcher_version }}.{{ stigman_watcher_pkg }}"
+            watcher_archive:
+                default: "stigman-watcher-linux-{{ watcher_version }}.{{ watcher_pkg }}"
                 description: "stigman-watcher install archive filename"
                 type: "str"
-            stigman_watcher_download_url:
-                default: "https://github.com/NUWCDIVNPT/stigman-watcher/releases/download/{{ stigman_watcher_version }}/{{ stigman_watcher_archive }}"
+            watcher_download_url:
+                default: "https://github.com/NUWCDIVNPT/stigman-watcher/releases/download/{{ watcher_version }}/{{ watcher_archive }}"
                 description: "Download URL for stigman-watcher"
                 type: "str"
-            stigman_watcher_installdir:
-                default: "{{ stigman_watcher_dest }}/stigman-watcher-{{ stigman_watcher_version }}"
+            watcher_installdir:
+                default: "{{ watcher_dest }}/stigman-watcher-{{ watcher_version }}"
                 description: "Installation path for stigman-watcher"
                 type: "str"
-            stigman_watcher_offline_install
+            watcher_offline_install
                 default: true
                 description: >
                     Perform an offline install. 
                     When True, ansible will look for the files in the root path from which the playbook was run"
                     When False, ansible will download the file to the root path from which the playbook was run"
                 type: "bool"
-            stigman_watcher_auth_strategy:
+            watcher_auth_strategy:
                 default: "client_id"
                 description: "The athentication strategy"
                 type: "str"
                 choices:
                   - client_id
                   - client_key
-            stigman_watcher_dest:
+            watcher_dest:
                 default: "/opt"
                 description: "Installation root path"
                 type: "str"
-            stigman_watcher_home:
-                default: "{{ stigman_watcher_installdir }}"
+            watcher_home:
+                default: "{{ watcher_installdir }}"
                 description: "Installation work directory"
                 type: "str"
-            stigman_watcher_service_user:
+            watcher_service_user:
                 default: "stigman"
                 description: "Posix account username"
                 type: "str"
-            stigman_watcher_service_group:
+            watcher_service_group:
                 default: "stigman"
                 description: "Posix account group"
                 type: "str"
-            stigman_watcher_service_restart_always:
+            watcher_service_restart_always:
                 default: false
-                description: "systemd restart always behavior of service; takes precedence over stigman_watcher_service_restart_on_failure if true"
+                description: "systemd restart always behavior of service; takes precedence over watcher_service_restart_on_failure if true"
                 type: "bool"
-            stigman_watcher_service_restart_on_failure:
+            watcher_service_restart_on_failure:
                 default: true
                 description: "systemd restart on-failure behavior of service"
                 type: "bool"
-            stigman_watcher_service_restartsec:
+            watcher_service_restartsec:
                 default: "60s"
                 description: "systemd RestartSec for service"
                 type: "str"
-            stigman_watcher_config_file:
-                default: "{{ stigman_watcher_home }}/.env"
+            watcher_config_file:
+                default: "{{ watcher_home }}/.env"
                 description: "File for configuration"
                 type: "str"
-            stigman_watcher_hostname:
+            watcher_hostname:
                 default: "localhost"
                 description: "The hostname stigman-wacher should access keycloak"
                 type: "bool"
-            stigman_watcher_http_port:
+            watcher_http_port:
                 default: "8080"
                 description: "The port stigman-wacher should access keycloak"
                 type: "str"
-         	stigman_watcher_http_context:
+         	watcher_http_context:
                 default: "/"
                 description: "keycloak context path for rest calls. older version uses /auth"
                 type: "str"
-           stigman_watcher_force_health_check:
+           watcher_force_health_check:
                 default: true
                 description: "Perform health check on endpoints"
                 type: "bool"
-        	stigman_watcher_health_check_url_path:
+        	watcher_health_check_url_path:
                 default: "/api/op/definition?jsonpath=%24.info.version"
                 description: >
-                    Path to the health check endpoint; scheme, host and stigman_watcher_http_context 
+                    Path to the health check endpoint; scheme, host and watcher_http_context 
                     path that will be prepended automatically
                 type: "str"
 
     downstream:
         options:
-            stigman_watcher_add_existing:
+            watcher_add_existing:
                 default: true
                 description: "The IP address on which the the API server will listen (WATCHER_ADD_EXISTING=1)"
                 type: "bool"
-            stigman_watcher_api_base:
+            watcher_api_base:
                 default: "http://localhost:54000/api"
                 description: "Required. Base URL of the STIG Manager API service (WATCHER_API_BASE)"
                 type: "int"
-            stigman_watcher_authority:
+            watcher_authority:
                 default: "http://localhost:8080/realms/stigman"
                 description: "Required. Base URL of the OIDC authentication service that issues OAuth2 tokens for the API (WATCHER_AUTHORITY)"
                 type: "int"
-            stigman_watcher_cargo_delay:
+            watcher_cargo_delay:
                 default: 2000
                 description: "Milliseconds to delay processing the queue (WATCHER_CARGO_DELAY). Range: 2000 to 30000"
                 type: "int"
-            stigman_watcher_cargo_size:
+            watcher_cargo_size:
                 default: 25
                 description: "Maximum queue size that triggers processing (WATCHER_CARGO_SIZE) Range: 1 to 100"
                 type: "int"
-            stigman_watcher_client_id:
+            watcher_client_id:
                 default: "stigman-watcher"
                 description: >
 					Required 
@@ -125,42 +125,42 @@ argument_specs:
                     You will be prompted for the client secret if --client-key is not present and --prompt is present, 
                     unless WATCHER_CLIENT_SECRET is set
                 type: "str"
-            stigman_watcher_client_secret:
+            watcher_client_secret:
                 default: "954fd71a-dad6-47ab-8035-060268f3d396"
                 description: >
       		       	OIDC client secret to authenticate (WATCHER_CLIENT_SECRET)
                     You will be prompted for the client secret if --client-key is not present and --prompt is present, 
                     Required
                 type: "str"
-            stigman_watcher_client_key:
+            watcher_client_key:
                 default: ""
                 description: >
                     Path to a PEM encoded private key (WATCHER_CLIENT_KEY). 
                     If the key is encrypted, you will be prompted for the passphrase if --prompt is present, unless WATCHER_CLIENT_KEY_PASSPHRASE is set.
                 type: "str"
-            stigman_watcher_client_key_passphrase:
+            watcher_client_key_passphrase:
                 default: ""
                 description: >
 					Passphrase for private key (WATCHER_CLIENT_KEY_PASSPHRASE). 
                     If the key is encrypted, you will be prompted for the passphrase if --prompt is present, unless it is set.
                 type: "str"
-            stigman_watcher_collection:
+            watcher_collection:
                 default: 1
                 description: "Required. collectionId to manage"
                 type: "int"
-			stigman_watcher_create_objects:
+			watcher_create_objects:
                 default: true
                 description: Create Assets or STIG Assignments as needed (WATCHER_CREATE_OBJECTS=1). Negate with --no-create-objects.  
 		        type: "bool"  
-            stigman_watcher_ignore_globs:
+            watcher_ignore_globs:
                 default: ["**/ignoreddir","**/somedir/ignoredfile"]
                 description: File or directory glob(s) to ignore. Can be invoked multiple times. (WATCHER_IGNORE_GLOBS=<csv>).
 	            type: "list"
-            stigman_watcher_log_file:
+            watcher_log_file:
                 default: "logs/watcher.log"
                 description: "Path to the log file which will be created if needed (WATCHER_LOG_FILE). Disable file logging with --no-log-file."
                 type: "str"         
-            stigman_watcher_log_file_level:
+            watcher_log_file_level:
                 default: "verbose"
                 description: "Log level for the log file (WATCHER_LOG_FILE_LEVEL). One of:"
                 type: "str"
@@ -172,7 +172,7 @@ argument_specs:
                   - verbose
                   - debug
                   - silly
-            stigman_watcher_history_file:
+            watcher_history_file:
                 default: "history.log"
                 description: >
                    When using `--mode scan`, this specifies the path to a scan history file (WATCHER_HISTORY_FILE). 
@@ -180,7 +180,7 @@ argument_specs:
                    To disable the history file feature, use `--no-history-file`. 
                    Each file found by the scanner is recorded in this file, and the scanner will skip over files already listed in it. 
                 type: "str"
-            stigman_watcher_log_level:
+            watcher_log_level:
                 default: info
                 description: "Log level for the console (WATCHER_LOG_LEVEL)."
                 type: "list"
@@ -192,21 +192,21 @@ argument_specs:
                   - verbose
                   - debug
                   - silly
-            stigman_watcher_path:
+            watcher_path:
                 default: ["./watched", "//unc/path"]
                 description: "Base path to watch (WATCHER_PATH)."
                 type: "list"
-            stigman_watcher_use_polling:
+            watcher_use_polling:
                 default: false
                 description: "Don't use polling with --mode events, reduces CPU usage (WATCHER_EVENT_POLLING=0)."
                 type: "bool"
-            stigman_watcher_stability_threshold:
+            watcher_stability_threshold:
                 default: 5000
                 description: >
                     If `--mode events`, milliseconds to wait for file size to stabilize (WATCHER_STABILITY_THRESHOLD). 
                     May be helpful when watching network shares. Igonred with `--mode scan` Range: 0 to 10000
                 type: "int"
-            stigman_watcher_mode:
+            watcher_mode:
                 default: "events"
                 description: "Strategy for detecting files to be processed. (WATCHER_MODE)"
                 type: "str"

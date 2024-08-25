@@ -46,14 +46,25 @@
   tags:
     - always
 
-- name: Ensure required packages are installed
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: fastpackages
-  vars:
-    packages_list: "{{ keycloak_prereq_package_list }}"
+- name: "Install packages: {{ keycloak_prereq_package_list }}"
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ keycloak_prereq_package_list }}"
+    state: present
+  when:
+    - keycloak_prereq_package_list  | default([]) | length > 0
+    - ansible_facts.os_family == "RedHat"
   tags:
-    - keyclaok
+    - always
+
+#- name: Ensure required packages are installed
+#  ansible.builtin.include_role:
+#    name: common
+#    tasks_from: fastpackages
+#  vars:
+#    packages_list: "{{ keycloak_prereq_package_list }}"
+#  tags:
+#    - keyclaok
 
 - name: "Validate keytool"
   when: keycloak_config_key_store_password | length > 0

@@ -1,18 +1,16 @@
 server {
-    listen                      443 ssl;
-    server_name                 localhost;
-    root                        /usr/share/nginx/html;
-    client_max_body_size        100M;
+    listen                       443 ssl;
+    server_name                  {{ nginx_site_name }}";
+    root                         /usr/share/nginx/html;
+    client_max_body_size         100M;
 
-    ssl_certificate "/etc/pki/nginx/{{ nginx_site_name }}.crt";
-    ssl_certificate_key "/etc/pki/nginx/private/{{ nginx_site_name }}.key";
+    ssl_certificate             "{{ nginx.crt_file }}";
+    ssl_certificate_key         "{{ nginx.key_file }}";
 
-    ssl_session_cache shared:SSL:1m;
-    ssl_session_timeout  10m;
-    ssl_ciphers PROFILE=SYSTEM;
+    ssl_session_cache           shared:SSL:1m;
+    ssl_session_timeout         10m;
+    ssl_ciphers                 PROFILE=SYSTEM;
     ssl_prefer_server_ciphers   on;
-
-    # if ($return_unauthorized) { return 496; }
 
     location /stigman/ {
         proxy_pass              http://localhost:54000/;

@@ -25,7 +25,7 @@ mysql_data_dir: /var/lib/mysql
 mysql_mycnf: /etc/my.cnf
 
 # List of prerequsite packages to install for MySQL"
-mysql_prereq_package_list: [ mysql-server ]
+mysql_prereq_package_list: [ mysql-server, python3-PyMySQL ]
 
 ## Mysql configuration settings
 # Sets the amount of memory for a buffer that is allocated for sessions performing a sort.

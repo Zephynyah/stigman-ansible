@@ -104,3 +104,6 @@
   ansible.builtin.meta: flush_handlers
   tags:
     - keyclaok
+
+- name: Flush handlers
+  meta: flush_handlers

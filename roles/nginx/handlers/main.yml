@@ -30,3 +30,9 @@
   when: nginx_install_service
   tags:
     - always
+
+- name: Update CA Trust Store
+  shell: /bin/update-ca-trust
+  when: ansible_os_family == "RedHat"
+  tags:
+    - always

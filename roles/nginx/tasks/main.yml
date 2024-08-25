@@ -12,14 +12,22 @@
   tags:
     - nginx
 
-- name: Ensure required packages are installed
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: fastpackages
-  vars:
-    packages_list:
-      - nginx
-      - openssl
+- name: "Install packages: {{ nginx_prereq_package_list }}"
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ nginx_prereq_package_list }}"
+    state: present
+  when:
+    - nginx_prereq_package_list  | default([]) | length > 0
+  tags:
+    - nginx
+
+- name: Ensure nginx conf.d contents are removed
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - "/etc/nginx/conf.d/*"
   tags:
     - nginx
 
@@ -46,46 +54,48 @@
 - name: Stat nginx configuration
   stat:
     path: /etc/nginx/nginx.conf
-  register: siteconfig_stat
-  tags:
-    - nginx
-
-- name: Stat nginx certificate
-  stat:
-    path: "{{ nginx.crt_file }}"
-  register: sitecert_stat
-  tags:
-    - nginx
-
-- name: Stat nginx key
-  stat:
-    path: "{{ nginx.key_file }}"
-  register: sitekey_stat
+  register: conf_org
   tags:
     - nginx
 
 - name: Stat nginx configuration
   stat:
     path: /etc/nginx/nginx.conf.org
-  register: configuration_stat
+  register: conf_backup
   tags:
     - nginx
 
 - name: Backup nginx configuration
   copy:
-    src: /etc/nginx/nginx.conf
-    dest: /etc/nginx/nginx.conf.org
-  when: configuration_stat.stat.exists == False
+    src: "{{ conf_org.stat.path }}"
+    dest: "{{ conf_backup.stat.path }}"
+  when: conf_backup.stat.exists == False
   tags:
     - nginx
-
 
 - name: Include OpenSSL for Selfsigned certificate
   ansible.builtin.include_tasks: openssl.yml
   tags:
+    - nginx
     - openssl
+  when: (nginx_ownca_enabled is defined and nginx_ownca_enabled == False) or nginx_ownca_enabled is undefined
 
-- name: "Configure nginx server conf file. {{ nginx.siteconf_file }}"
+- name: Include Ownca Authority
+  block:
+    - name: Include Ownca Authority for selfigned certificates
+      ansible.builtin.include_tasks: ownca.yml
+      tags:
+        - nginx
+        - openssl
+
+    - name: Include Ownca OpenSSL for Selfsigned certificate
+      ansible.builtin.include_tasks: ownca_openssl.yml
+      tags:
+        - nginx
+        - openssl
+  when: nginx_ownca_enabled is defined and nginx_ownca_enabled == True
+
+- name: "Configure nginx server conf file"
   template:
     src: 'server.conf.j2'
     dest: "{{ nginx.siteconf_file }}"
@@ -100,7 +110,7 @@
 
 - name: PPatch the nginx config file 'worker_connections'
   ansible.builtin.replace:
-    dest: /etc/nginx/nginx.conf
+    dest: "{{ conf_org.stat.path }}"
     regexp: '^(.*){{ item.regexp }}(.*)$'
     replace: '{{ item.replace }}'
     owner: nginx
@@ -112,3 +122,6 @@
     - Test nginx and restart
   tags:
     - nginx
+
+- name: Flush handlers
+  meta: flush_handlers

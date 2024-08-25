@@ -1,0 +1,103 @@
+---
+- name: Ensure nginx private directory exist
+  file:
+    path: "{{ nginx_ssl_private_dir }}"
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0775
+    recurse: yes
+  tags:
+    - nginx
+    - openssl
+
+- name: "Ensure root CA sub-directories not exist: ownca/[keys, csrs, and crts]"
+  run_once: true
+  delegate_to: localhost
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - '{{ nginx_ownca_keys_dir }}'
+    - '{{ nginx_ownca_csrs_dir }}'
+    - '{{ nginx_ownca_crts_dir }}'
+  tags:
+    - nginx
+    - openssl
+
+- name: "Ensure root CA directories exist: ownca/[keys, csrs, and crts]"
+  run_once: true
+  delegate_to: localhost
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - '{{ nginx_ownca_keys_dir }}'
+    - '{{ nginx_ownca_csrs_dir }}'
+    - '{{ nginx_ownca_crts_dir }}'
+  tags:
+    - nginx
+    - openssl
+
+- name: Create private key for new certificate
+  delegate_to: localhost
+  openssl_privatekey:
+    path: "{{ nginx_ownca_keys_dir }}/{{ ansible_hostname }}.key"
+  register: key
+  tags:
+    - nginx
+    - openssl
+
+- name: Create certificate signing request (CSR) for new certificate
+  delegate_to: localhost
+  openssl_csr:
+    privatekey_path: "{{ key.filename }}"
+    #ownca_privatekey_passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"
+    path: "{{ nginx_ownca_csrs_dir }}/{{ ansible_hostname }}.csr"
+    common_name: "{{ nginx.ssl.common_name }}"
+    email_address: "{{ nginx.ssl.email_address }}"
+    country_name: "{{ nginx.ssl.country_name }}"
+    state_or_province_name: "{{ nginx.ssl.state_or_province_name }}"
+    locality_name: "{{ nginx.ssl.locality_name }}"
+    organization_name: "{{ nginx.ssl.organization_name }}"
+    organizational_unit_name:  "{{ nginx.ssl.organizational_unit_name }}"
+    subject_alt_name:
+      - "DNS:{{ ansible_fqdn }}"
+      - "DNS:{{ ansible_nodename }}"
+      - "IP:{{ ansible_default_ipv4.address }}"
+      - "IP:127.0.0.1"
+  register: csr
+  tags:
+    - nginx
+    - openssl
+
+- name: Sign certificate with our CA
+  delegate_to: localhost
+  openssl_certificate:
+    path: "{{ nginx_ownca_crts_dir }}/{{ ansible_hostname }}.crt"
+    csr_path: "{{ csr.filename }}"
+    provider: ownca
+    ownca_path: "{{ ca_crt.filename }}"
+    ownca_privatekey_path: "{{ ca_key.filename }}"
+    #ownca_privatekey_passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"
+    ownca_not_after: "{{ nginx_ownca_not_after }}"
+    ownca_not_before: "{{ nginx_ownca_not_before }}"
+  register: certificate
+  tags:
+    - nginx
+    - openssl
+
+- name: Copy certificate file on servers
+  copy:
+    src: '{{ item.path }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - { path: "{{ nginx_ownca_crts_dir }}/{{ ansible_hostname }}.crt", dest: "{{ nginx_ssl_dir }}" }
+    - { path: "{{ nginx_ownca_csrs_dir }}/{{ ansible_hostname }}.csr", dest: "{{ nginx_ssl_dir }}" }
+    - { path: "{{ nginx_ownca_keys_dir }}/{{ ansible_hostname }}.key", dest: "{{ nginx_ssl_private_dir }}" }
+  tags:
+    - nginx
+    - openssl
+   
+
+

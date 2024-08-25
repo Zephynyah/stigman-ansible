@@ -13,9 +13,6 @@
     mysql_db_user: stigman
 
   tasks:
-    - command: hostname -f
-      register: result
-
     - name: Ensure stigman DB user is removed form database
       ansible.builtin.user:
         name: "{{ mysql_db_user }}"
@@ -48,9 +45,6 @@
         state: absent
         autoremove: yes
 
-    - name: Ensure removal of persistent facts from ansible.builtin.set_fact
-      ansible.builtin.meta: clear_facts
-
     - name: Ensure absence of mysql
       become: true
       ansible.builtin.file:
@@ -73,7 +67,6 @@
         - /etc/systemd/system/keycloak.service
         - /opt/keycloak-{{ keycloak_version }}/
         - /opt/keycloak-{{ keycloak_version }}.tar.gz
-
 
     - name: Ensure absence of stig-manager
       become: true
@@ -111,10 +104,11 @@
         name: "{{ item }}"
         state: absent
       with_items:
-        - /etc/pki/nginx/{{ result.stdout }}.crt
-        - /etc/pki/nginx/private/{{ result.stdout }}.key
-        - /etc/nginx/conf.d/{{ result.stdout }}.conf
-        - /etc/nginx/conf.d/server.conf
+        - /etc/pki/nginx/{{ ansible_hostname }}.crt
+        - /etc/pki/nginx/{{ ansible_hostname }}.csr
+        - /etc/pki/nginx/private/{{ ansible_hostname }}.key
+        - /etc/nginx/conf.d/{{ ansible_hostname }}.conf
+        - /etc/nginx/conf.d/localhost.conf
 
     - name: Ensure removal of nginx and its dependencies
       ansible.builtin.dnf:
@@ -129,6 +123,8 @@
         state: no
         persistent: no
 
+    - name: Ensure removal of persistent facts from ansible.builtin.set_fact
+      ansible.builtin.meta: clear_facts
 
 
 

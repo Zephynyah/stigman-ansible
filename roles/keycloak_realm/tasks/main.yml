@@ -40,3 +40,6 @@
   when: keycloak_realm_exists.status == 404
   tags:
     - always
+
+- name: Flush handlers
+  meta: flush_handlers

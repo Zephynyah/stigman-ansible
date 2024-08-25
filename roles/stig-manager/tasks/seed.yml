@@ -19,7 +19,7 @@
     target: "{{ stigman_db_dump_file }}"
     login_user: "{{ stigman_db_user }}"
     login_password: "{{ stigman_db_password }}"
-  no_log: true
+  #no_log: true
   when:
     - stigman_db_schema == "stigman"
     - (not seed_file.failed)

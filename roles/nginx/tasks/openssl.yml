@@ -11,54 +11,47 @@
     - nginx
     - openssl
 
-- name: Ensure absence old files if exists
-  become: true
-  ansible.builtin.file:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-    - "{{ nginx.key_file }}" 
-    - "{{ nginx.csr_file }}" 
-    - "{{ nginx.crt_file  }}" 
+- name: Generate an OpenSSL private RSA key
+  openssl_privatekey:
+    force: true
+    path: "{{ nginx.key_file }}" 
+    type: "{{ nginx.key_type }}" 
+    size: "{{ nginx.key_size }}" 
+  register: key
   tags:
     - nginx
     - openssl
 
-- name: Generate RSA Key
-  command: >
-      openssl 
-      genrsa  
-      -out "{{ nginx.key_file }}" 
-      2048
-  args:
-    creates: "{{ nginx.key_file }}"
+- name: Generate an OpenSSL certificate signing request file bases on input key values
+  openssl_csr:
+    force: true
+    path: "{{ nginx.csr_file }}"
+    privatekey_path: "{{ key.filename }}"
+    common_name: "{{ nginx.ssl.common_name }}"
+    email_address: "{{ nginx.ssl.email_address }}"
+    country_name: "{{ nginx.ssl.country_name }}"
+    state_or_province_name: "{{ nginx.ssl.state_or_province_name }}"
+    locality_name: "{{ nginx.ssl.locality_name }}"
+    organization_name: "{{ nginx.ssl.organization_name }}"
+    organizational_unit_name: "{{ nginx.ssl.organizational_unit_name }}"
+    subject_alt_name:
+      - "DNS:{{ ansible_fqdn }}"
+      - "DNS:{{ ansible_nodename }}"
+      - "IP:{{ ansible_default_ipv4.address }}"
+      - "IP:127.0.0.1"
+  register: csr
   tags:
     - nginx
     - openssl
 
-- name: Generate CSR (Used to create Company signed Key)
-  command: >
-    openssl req 
-    -new 
-    -subj "/C=US/ST=CT/L=East Hartford/O={{nginx.ssl.organization_name}}/CN={{nginx.ssl.common_name}}"
-    -key "{{ nginx.key_file }}"
-    -out "{{ nginx.csr_file }}"
-  args:
-    creates: "{{ nginx.csr_file }}"
-  tags:
-    - nginx
-    - openssl
-
-- name: Generate Self-signed Certificate
-  command: >
-    openssl req 
-    -x509 
-    -days 3650 
-    -key "{{ nginx.key_file }}"
-    -in "{{ nginx.csr_file }}"
-    -out "{{ nginx.crt_file }}"
-  args:
-    creates: "{{ nginx.crt_file }}"
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    force: true
+    path: "{{ nginx.crt_file }}"
+    privatekey_path: "{{ nginx.key_file }}" 
+    csr_path: "{{ nginx.csr_file }}" 
+    provider: selfsigned
+  register: crt
   tags:
     - nginx
     - openssl
