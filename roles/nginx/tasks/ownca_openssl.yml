@@ -18,9 +18,9 @@
     path: "{{ item }}"
     state: absent
   loop:
-    - '{{ nginx_ownca_keys_dir }}'
-    - '{{ nginx_ownca_csrs_dir }}'
-    - '{{ nginx_ownca_crts_dir }}'
+    - '{{ nginx.ownca.keys_dir }}'
+    - '{{ nginx.ownca.csrs_dir }}'
+    - '{{ nginx.ownca.crts_dir }}'
   tags:
     - nginx
     - openssl
@@ -32,9 +32,9 @@
     path: "{{ item }}"
     state: directory
   loop:
-    - '{{ nginx_ownca_keys_dir }}'
-    - '{{ nginx_ownca_csrs_dir }}'
-    - '{{ nginx_ownca_crts_dir }}'
+    - '{{ nginx.ownca.keys_dir }}'
+    - '{{ nginx.ownca.csrs_dir }}'
+    - '{{ nginx.ownca.crts_dir }}'
   tags:
     - nginx
     - openssl
@@ -42,7 +42,7 @@
 - name: Create private key for new certificate
   delegate_to: localhost
   openssl_privatekey:
-    path: "{{ nginx_ownca_keys_dir }}/{{ ansible_hostname }}.key"
+    path: "{{ nginx.ownca.keys_dir }}/{{ ansible_hostname }}.key"
   register: key
   tags:
     - nginx
@@ -53,7 +53,7 @@
   openssl_csr:
     privatekey_path: "{{ key.filename }}"
     #ownca_privatekey_passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"
-    path: "{{ nginx_ownca_csrs_dir }}/{{ ansible_hostname }}.csr"
+    path: "{{ nginx.ownca.csrs_dir }}/{{ ansible_hostname }}.csr"
     common_name: "{{ nginx.ssl.common_name }}"
     email_address: "{{ nginx.ssl.email_address }}"
     country_name: "{{ nginx.ssl.country_name }}"
@@ -74,7 +74,7 @@
 - name: Sign certificate with our CA
   delegate_to: localhost
   openssl_certificate:
-    path: "{{ nginx_ownca_crts_dir }}/{{ ansible_hostname }}.crt"
+    path: "{{ nginx.ownca.crts_dir }}/{{ ansible_hostname }}.crt"
     csr_path: "{{ csr.filename }}"
     provider: ownca
     ownca_path: "{{ ca_crt.filename }}"
@@ -92,9 +92,9 @@
     src: '{{ item.path }}'
     dest: '{{ item.dest }}'
   loop:
-    - { path: "{{ nginx_ownca_crts_dir }}/{{ ansible_hostname }}.crt", dest: "{{ nginx_ssl_dir }}" }
-    - { path: "{{ nginx_ownca_csrs_dir }}/{{ ansible_hostname }}.csr", dest: "{{ nginx_ssl_dir }}" }
-    - { path: "{{ nginx_ownca_keys_dir }}/{{ ansible_hostname }}.key", dest: "{{ nginx_ssl_private_dir }}" }
+    - { path: "{{ nginx.ownca.crts_dir }}/{{ ansible_hostname }}.crt", dest: "{{ nginx_ssl_dir }}" }
+    - { path: "{{ nginx.ownca.csrs_dir }}/{{ ansible_hostname }}.csr", dest: "{{ nginx_ssl_dir }}" }
+    - { path: "{{ nginx.ownca.keys_dir }}/{{ ansible_hostname }}.key", dest: "{{ nginx_ssl_private_dir }}" }
   tags:
     - nginx
     - openssl

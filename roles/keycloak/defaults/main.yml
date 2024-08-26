@@ -67,27 +67,9 @@ keycloak_cert_file_copy_enabled: false
 keycloak_cert_file_src: ""
 keycloak_cert_file: "/etc/pki/tls/certs/server.crt.pem"
 
-#### key store configuration
-keycloak_https_key_store_enabled: false
-keycloak_https_key_store_file: "{{ keycloak.home }}/conf/key_store.p12"
-keycloak_https_key_store_password: ''
-
-##### trust store configuration
-keycloak_https_trust_store_enabled: false
-keycloak_https_trust_store_file: "{{ keycloak.home }}/conf/trust_store.p12"
-keycloak_https_trust_store_password: ''
-
-### configuration key store configuration
-keycloak_config_key_store_file: "{{ keycloak.home }}/conf/conf_store.p12"
-keycloak_config_key_store_password: ''
-
-### Enable configuration for database backend, clustering and remote caches on infinispan
-keycloak_ha_enabled: false
-keycloak_ha_discovery: "TCPPING"
-
 ### Enable database configuration, must be enabled when HA is configured
-keycloak_db_enabled: "{{ keycloak_ha_enabled }}"
-keycloak_systemd_wait_for_port: "{{ keycloak_ha_enabled }}"
+keycloak_db_enabled: false
+keycloak_systemd_wait_for_port: false
 keycloak_systemd_wait_for_port_number: "{{ keycloak_https_port }}"
 keycloak_systemd_wait_for_log: false
 keycloak_systemd_wait_for_timeout: 60
@@ -125,40 +107,6 @@ keycloak_spi_sticky_session_encoder_infinispan_should_attach_route: true
 keycloak_metrics_enabled: false
 keycloak_health_enabled: true
 
-### infinispan remote caches access (hotrod)
-keycloak_ispn_user: supervisor
-keycloak_ispn_pass: supervisor
-keycloak_ispn_hosts: "localhost:11222"
-keycloak_ispn_sasl_mechanism: SCRAM-SHA-512
-keycloak_ispn_use_ssl: false
-
-# if ssl is enabled, import ispn server certificate here
-keycloak_ispn_trust_store_path: /etc/pki/java/cacerts
-keycloak_ispn_trust_store_password: changeit
-
-### database backend engine: values [ 'postgres', 'mariadb' ]
-keycloak_jdbc_engine: postgres
-
-### database backend credentials
-keycloak_db_user: keycloak-user
-keycloak_db_pass: keycloak-pass
-keycloak_jdbc_url: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].url }}"
-keycloak_jdbc_driver_version: "{{ keycloak_default_jdbc[keycloak_jdbc_engine].version }}"
-
-# override the variables above, following defaults show minimum supported versions
-keycloak_default_jdbc:
-  postgres:
-    url: 'jdbc:postgresql://localhost:5432/keycloak'
-    version: 9.4.1212
-  mariadb:
-    url: 'jdbc:mariadb://localhost:3306/keycloak'
-    version: 2.7.4
-  mssql:
-    url: 'jdbc:sqlserver://localhost:1433;databaseName=keycloak;'
-    version: 12.4.2
-    driver_jar_url: "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/12.4.2.jre11/mssql-jdbc-12.4.2.jre11.jar"
-    # cf. https://access.redhat.com/documentation/en-us/red_hat_build_of_keycloak/24.0/html/server_guide/db-#db-installing-the-microsoft-sql-server-driver
-
 ### logging configuration
 keycloak_log: file
 keycloak_log_level: info
@@ -168,16 +116,6 @@ keycloak_log_target: /var/log/keycloak
 keycloak_log_max_file_size: 10M
 keycloak_log_max_backup_index: 10
 keycloak_log_file_suffix: '.yyyy-MM-dd.zip'
-
-# keystore-based vault
-keycloak_ks_vault_enabled: false
-keycloak_ks_vault_file: "{{ keycloak_config_dir }}/keystore.p12"
-keycloak_ks_vault_type: PKCS12
-keycloak_ks_vault_pass:
-
-keycloak_providers: []
-keycloak_policies: []
-keycloak_supported_policy_types: ['password-blacklists']
 
 # files in restart directory (one of [ 'serial', 'none', 'serial_then_parallel' ]), or path to file when providing custom strategy
 keycloak_restart_strategy: restart/serial.yml

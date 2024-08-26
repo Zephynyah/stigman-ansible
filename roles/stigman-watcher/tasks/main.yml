@@ -154,20 +154,19 @@
     - watcher
 
 - name: "Generating JWT Keys and Certificates"
-  ansible.builtin.include_tasks: stratergy.yml
+  ansible.builtin.include_tasks: jwt.yml
   tags:
     - watcher
     - jwt
-  #when:
-    #- watcher_auth_strategy == "client_key"
+  when:
+    - watcher_auth_strategy == "client_key"
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
   tags:
     - watcher
 
-- name: Flush handlers
-  meta: flush_handlers
-
-
-
+- name: Flush pending handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - always

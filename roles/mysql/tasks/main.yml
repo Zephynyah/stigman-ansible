@@ -116,7 +116,9 @@
   tags:
     - always
 
-- name: Flush handlers
-  meta: flush_handlers
+- name: Flush pending handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - always
 
 

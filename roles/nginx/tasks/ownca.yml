@@ -12,7 +12,7 @@
 - name: Create private key with password protection
   delegate_to: localhost
   openssl_privatekey:
-    path: "{{ nginx_ownca_root_key }}"
+    path: "{{ nginx.ownca.root_key }}"
     #passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"
     #cipher: "{{ nginx_ownca_cipher|default(omit) }}"
   register: ca_key
@@ -23,7 +23,7 @@
 - name: Create certificate signing request (CSR) for CA certificate
   delegate_to: localhost
   openssl_csr:
-    path: "{{ nginx_ownca_root_csr }}"
+    path: "{{ nginx.ownca.root_csr }}"
     privatekey_path: "{{ ca_key.filename }}"
     #privatekey_passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"
     common_name: "{{ nginx_ownca_common_name }}"
@@ -47,7 +47,7 @@
 - name: Create self-signed CA certificate from CSR
   delegate_to: localhost
   openssl_certificate:
-    path: "{{ nginx_ownca_root_crt }}"
+    path: "{{ nginx.ownca.root_crt }}"
     csr_path: "{{ ca_csr.filename }}"
     privatekey_path: "{{ ca_key.filename }}"
     #privatekey_passphrase: "{{ nginx_ownca_passphrase|default(omit) }}"

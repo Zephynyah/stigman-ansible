@@ -10,7 +10,6 @@ keycloak: # noqa var-naming this is an internal dict of interpolated values
   service_user: "{{ keycloak_service_user }}"
   service_group: "{{ keycloak_service_group }}"
   offline_install: "{{ keycloak_offline_install }}"
-  config_key_store_enabled: "{{ keycloak_config_key_store_password != '' }}"
   log:
     file: "{{ keycloak_home }}/{{ keycloak_log_file }}"
     level: "{{ keycloak_log_level }}"

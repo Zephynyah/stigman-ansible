@@ -8,16 +8,14 @@ nginx: # noqa var-naming this is an internal dict of interpolated values
   anchor_file: "{{ nginx_ssl_anchor_dir }}/{{ ansible_hostname }}.pem" 
   key_size: "{{ nginx_ssl_key_size }}"
   key_type: "{{ nginx_ssl_key_type }}"
-
   ssl:
     common_name: "{{ nginx_ssl_common_name }}"
     country_name: "{{ nginx_ssl_country_name }}"
-    state_or_province_name: "{{ nginx_ssl_state_or_province_name }}"
+    state_or_province_name: "{{ nginx_ssl_state_name }}"
     locality_name: "{{ nginx_ssl_locality_name }}"
     email_address: "{{ nginx_ssl_email_address }}"
     organization_name: "{{ nginx_ssl_organization_name }}"
     organizational_unit_name: "{{ nginx_ssl_organizational_unit_name }}"
-  
   ownca: 
     keys_dir: "{{ nginx_ownca_dir }}/keys" 
     csrs_dir: "{{ nginx_ownca_dir }}/csrs"

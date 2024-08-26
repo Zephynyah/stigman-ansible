@@ -10,4 +10,4 @@
           run_once: true
       loop: "{{ ansible_play_hosts }}"
   tags:
-    - keyclaok
+    - keycloak

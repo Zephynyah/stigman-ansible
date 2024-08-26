@@ -6,31 +6,17 @@
     - prereqs
     - always
 
-- name: Include firewall config tasks
-  ansible.builtin.include_tasks: firewalld.yml
-  when: keycloak_configure_firewalld
-  tags:
-    - firewall
-    - keyclaok
-
 - name: Include install tasks
   ansible.builtin.include_tasks: install.yml
   tags:
     - install
-    - keyclaok
+    - keycloak
 
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
   tags:
     - systemd
-    - keyclaok
-
-- name: Include configuration key store tasks
-  when: keycloak.config_key_store_enabled
-  ansible.builtin.include_tasks: config_store.yml
-  tags:
-    - install
-    - keyclaok
+    - keycloak
 
 - name: "Configure config files for keycloak service"
   ansible.builtin.template:
@@ -43,12 +29,11 @@
   loop:
     - keycloak.conf
     - quarkus.properties
-    - cache-ispn.xml
   notify:
     - rebuild keycloak config
     - restart keycloak
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Ensure logdirectory exists
   ansible.builtin.file:
@@ -59,17 +44,17 @@
     mode: '0775'
   become: true
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Flush pending handlers
   ansible.builtin.meta: flush_handlers
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Start and wait for keycloak service"
   ansible.builtin.include_tasks: start.yml
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Link default logs directory
   ansible.builtin.file:
@@ -79,7 +64,7 @@
     force: true
   become: true
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Check service status
   ansible.builtin.systemd:
@@ -87,7 +72,7 @@
   register: keycloak_service_status
   changed_when: false
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Trigger bootstrapped notification: remove `keycloak_admin_user[_pass]` env vars"
   when:
@@ -98,12 +83,9 @@
   notify:
     - bootstrapped
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Flush pending handlers
   ansible.builtin.meta: flush_handlers
   tags:
-    - keyclaok
-
-- name: Flush handlers
-  meta: flush_handlers
+    - keycloak

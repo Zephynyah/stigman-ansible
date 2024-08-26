@@ -16,11 +16,6 @@
      #  prompt: Enter the DB Password for Stigman User
 
   tasks:
-    - command: hostname -f
-      register: result
-      tags:
-        - always
-
     - name: Include MySQL
       include_role:
         name: mysql
@@ -57,13 +52,6 @@
       include_role:
         name: nginx
       vars:
-        country: 'US'                           # C
-        state: 'CT'                             # ST
-        locality: 'Trenton'                     # L
-        organization: 'ACME'                    # O
-        organization_unit: 'IT'                 # OU
-        common_name: '{{ ansible_hostname }}'   # CN
-        email_address: 'info@example.com'       # emailAddress
         nginx_ownca_enabled: true
       tags:
         - nginx
@@ -110,4 +98,4 @@
         - stigman
         - watcher
       tags:
-        - nginx
+        - always

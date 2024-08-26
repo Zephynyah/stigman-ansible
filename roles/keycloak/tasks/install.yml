@@ -10,7 +10,7 @@
       - keycloak_version is defined
     quiet: true
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Check for an existing deployment
   become: true
@@ -18,7 +18,7 @@
     path: "{{ keycloak.home }}"
   register: existing_deploy
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Create {{ keycloak.service_name }} service user/group"
   become: true
@@ -28,7 +28,7 @@
     system: true
     create_home: false
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Create {{ keycloak.service_name }} install location"
   become: true
@@ -39,7 +39,7 @@
     group: "{{ keycloak.service_group }}"
     mode: '0750'
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Create directory for ansible custom facts
   become: true
@@ -48,14 +48,14 @@
     recurse: true
     path: /etc/ansible/facts.d
   tags:
-    - keyclaok
+    - keycloak
 
 ## check remote archive
 - name: Set download archive path
   ansible.builtin.set_fact:
     archive: "{{ keycloak_dest }}/{{ keycloak.bundle }}"
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Check download archive path
   become: true
@@ -63,7 +63,7 @@
     path: "{{ archive }}"
   register: archive_path
   tags:
-    - keyclaok
+    - keycloak
 
 ## download to controller
 - name: Check local download archive path
@@ -74,7 +74,7 @@
   run_once: true
   become: false
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Download keycloak archive
   ansible.builtin.get_url: # noqa risky-file-permissions delegated, uses controller host user
@@ -91,7 +91,7 @@
     - not keycloak.offline_install
     - not rhbk_enable is defined or not rhbk_enable
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Check downloaded archive
   ansible.builtin.stat:
@@ -101,7 +101,7 @@
   become: false
   run_once: true
   tags:
-    - keyclaok
+    - keycloak
 
 ## copy and unpack
 - name: Copy archive to target nodes
@@ -118,7 +118,7 @@
     - local_archive_path.stat.exists
   become: true
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Check target directory: {{ keycloak.home }}/bin/"
   ansible.builtin.stat:
@@ -126,7 +126,7 @@
   register: path_to_workdir
   become: true
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Extract Keycloak archive on target" # noqa no-handler need to run this here
   ansible.builtin.unarchive:
@@ -142,7 +142,7 @@
   notify:
     - restart keycloak
   tags:
-    - keyclaok
+    - keycloak
 
 - name: Inform decompression was not executed
   ansible.builtin.debug:
@@ -150,69 +150,4 @@
   when:
     - (not new_version_downloaded.changed) and path_to_workdir.stat.exists
   tags:
-    - keyclaok
-
-- name: "Copy private key to target"
-  ansible.builtin.copy:
-    content: "{{ keycloak_key_content }}"
-    dest: "{{ keycloak_key_file }}"
-    owner: "{{ keycloak.service_user }}"
-    group: "{{ keycloak.service_group }}"
-    mode: '0640'
-  become: true
-  when:
-    - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
-    - keycloak_key_file_copy_enabled is defined and keycloak_key_file_copy_enabled
-    - keycloak_key_content | length > 0
-  tags:
-    - keyclaok
-
-- name: "Copy certificate to target"
-  ansible.builtin.copy:
-    src: "{{ keycloak_cert_file_src }}"
-    dest: "{{ keycloak_cert_file }}"
-    owner: "{{ keycloak.service_user }}"
-    group: "{{ keycloak.service_group }}"
-    mode: '0644'
-  become: true
-  when:
-    - keycloak_https_key_file_enabled is defined and keycloak_https_key_file_enabled
-    - keycloak_cert_file_copy_enabled is defined and keycloak_cert_file_copy_enabled
-    - keycloak_cert_file_src | length > 0
-  tags:
-    - keyclaok
-
-- name: "Install {{ keycloak_jdbc_engine }} JDBC driver"
-  ansible.builtin.include_tasks: jdbc_driver.yml
-  when:
-    - rhbk_enable is defined and rhbk_enable
-    - keycloak_default_jdbc[keycloak_jdbc_engine].driver_jar_url is defined
-  tags:
-    - keyclaok
-
-- name: Ensure required folder structure for policies exists
-  ansible.builtin.file:
-    path: "{{ keycloak.home }}/data/{{ item | lower }}"
-    state: directory
-    owner: "{{ keycloak.service_user }}"
-    group: "{{ keycloak.service_group }}"
-    mode: '0750'
-  become: true
-  loop: "{{ keycloak_supported_policy_types }}"
-  tags:
-    - keyclaok
-
-- name: "Install custom policies"
-  ansible.builtin.get_url:
-    url: "{{ item.url }}"
-    dest: "{{ keycloak.home }}/data/{{ item.type | default(keycloak_supported_policy_types | first) | lower }}/{{ item.name }}"
-    owner: "{{ keycloak.service_user }}"
-    group: "{{ keycloak.service_group }}"
-    mode: '0640'
-  become: true
-  loop: "{{ keycloak_policies }}"
-  when: item.url is defined and item.url | length > 0
-  notify: "restart keycloak"
-  tags:
-    - keyclaok
-
+    - keycloak

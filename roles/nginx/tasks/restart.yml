@@ -1,0 +1,27 @@
+---
+- name: Test nginx and reload
+  command: >
+     nginx -t
+  tags:
+    - nginx
+
+- name: Restart and enable service
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  become: true
+  tags:
+     - nginx
+
+- name: Ensure nginx in a running state
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+  register: nginxDetails
+  until: nginxDetails.status.ActiveState == "active"
+  retries: 5
+  delay: 3
+  tags:
+    - nginx

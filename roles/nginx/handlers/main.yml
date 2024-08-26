@@ -1,38 +1,7 @@
 ---
-- name: Test nginx and restart
-  command: nginx -t
-  when: nginx_install_service
-  notify:
-    - restart nginx
+- name: "Restart nginx"
+  ansible.builtin.include_tasks: restart.yml
+  listen: "restart nginx"
   tags:
     - always
 
-- name: Test nginx and reload
-  command: nginx -t
-  when: nginx_install_service
-  notify:
-    - reload nginx
-  tags:
-    - always
-
-- name: restart nginx
-  service:
-    name: 'nginx'
-    state: 'restarted'
-  when: nginx_install_service
-  tags:
-    - always
-
-- name: reload nginx
-  service:
-    name: 'nginx'
-    state: 'reloaded'
-  when: nginx_install_service
-  tags:
-    - always
-
-- name: Update CA Trust Store
-  shell: /bin/update-ca-trust
-  when: ansible_os_family == "RedHat"
-  tags:
-    - always

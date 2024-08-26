@@ -7,7 +7,6 @@
       - nginx.crt_file is defined
       - nginx.csr_file is defined
       - nginx.siteconf_file is defined
-      - nginx_ssl_generate_self_signed_certs is defined
     quiet: true
   tags:
     - nginx
@@ -22,12 +21,23 @@
   tags:
     - nginx
 
-- name: Ensure nginx conf.d contents are removed
+- name: Collect all conf.d items inside dir
+  find:
+    path: "{{ nginx_siteconf_dir }}"
+    hidden: true
+    file_type: any
+  changed_when: false
+  register: confd_collected
+  tags:
+    - nginx
+
+- name: Remove all conf.d items inside dir
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: absent
-  with_fileglob:
-    - "/etc/nginx/conf.d/*"
+  with_items: "{{ confd_collected.files }}"
+  when: confd_collected.matched|int != 0
+  no_log: True
   tags:
     - nginx
 
@@ -45,8 +55,6 @@
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
   become: true
   command: setsebool httpd_can_network_connect on -P
-  when:
-    - nginx_httpd_can_network_connect_enabled == True
   tags:
     - nginx
     - setsebool
@@ -104,11 +112,11 @@
     mode: '0644'
   register: nginx_register_nginx_config
   notify:
-    - Test nginx and reload
+    - restart nginx
   tags:
     - nginx
 
-- name: PPatch the nginx config file 'worker_connections'
+- name: Patch the nginx config file
   ansible.builtin.replace:
     dest: "{{ conf_org.stat.path }}"
     regexp: '^(.*){{ item.regexp }}(.*)$'
@@ -119,9 +127,11 @@
   with_items:
     - { regexp: 'worker_connections', replace: '     worker_connections 4096;' }
   notify:
-    - Test nginx and restart
+    - restart nginx
   tags:
     - nginx
 
-- name: Flush handlers
-  meta: flush_handlers
+- name: Flush pending handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - always

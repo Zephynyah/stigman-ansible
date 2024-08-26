@@ -1,15 +1,5 @@
 {{ ansible_managed | comment }}
 
-{% if keycloak_db_enabled %}
-# Database
-db={{ keycloak_jdbc_engine }}
-db-url={{ keycloak_jdbc_url }}
-db-username={{ keycloak_db_user }}
-{% if not keycloak.config_key_store_enabled %}
-db-password={{ keycloak_db_pass }}
-{% endif %}
-{% endif %}
-
 {% if keycloak_hostname_strict_https is defined and keycloak_hostname_strict_https is sameas true -%}
 hostname-strict-https=true
 {% endif -%}
@@ -17,21 +7,12 @@ hostname-strict-https=true
 hostname-strict-https=false
 {% endif -%}
 
-
 {% if keycloak_hostname_backchannel_dynamic is defined and keycloak_hostname_backchannel_dynamic is sameas true -%}
 hostname-backchannel-dynamic=true
 {% endif -%}
 {% if keycloak_hostname_backchannel_dynamic is defined and keycloak_hostname_backchannel_dynamic is sameas false -%}
 hostname-backchannel-dynamic=false
 {% endif -%}
-
-
-{% if keycloak.config_key_store_enabled %}
-# Config store
-config-keystore={{ keycloak_config_key_store_file }}
-config-keystore-password={{ keycloak_config_key_store_password }}
-config-keystore-type=PKCS12
-{% endif %}
 
 # Observability
 metrics-enabled={{ keycloak_metrics_enabled | lower }}
@@ -49,16 +30,6 @@ https-certificate-file={{ keycloak_cert_file}}
 https-certificate-key-file={{ keycloak_key_file }}
 {% endif %}
 
-{% if keycloak_https_key_store_enabled %}
-https-key-store-file={{ keycloak_https_key_store_file }}
-https-key-store-password={{ keycloak_https_key_store_password }}
-{% endif %}
-
-{% if keycloak_https_trust_store_enabled %}
-https-trust-store-file={{ keycloak_https_trust_store_file }}
-https-trust-store-password={{ keycloak_https_trust_store_password }}
-{% endif %}
-
 # Client URL configuration
 {% if keycloak_frontend_url %}
 # hostname-url={{ keycloak_frontend_url }}
@@ -71,15 +42,6 @@ https-trust-store-password={{ keycloak_https_trust_store_password }}
 #hostname-admin-url={{ keycloak_admin_url }}
 hostname-strict={{ keycloak_hostname_strict | lower }}
 #hostname-strict-backchannel={{ keycloak_hostname_strict_backchannel | lower }}
-
-# Cluster
-{% if keycloak_ha_enabled %}
-cache=ispn
-cache-config-file=cache-ispn.xml
-{% if keycloak_ha_enabled and keycloak_ha_discovery == 'TCPPING' %}
-# cache-stack=tcp # configured directly in `cache-ispn.xml`
-{% endif %}
-{% endif %}
 
 {% if keycloak_proxy_headers | length > 0 %}
 proxy-headers={{ keycloak_proxy_headers | lower }}
@@ -100,21 +62,3 @@ log-level={{ keycloak.log.level }}
 log-file={{ keycloak.log.file }}
 log-file-format={{ keycloak.log.format }}
 
-# Vault
-{% if keycloak_ks_vault_enabled %}
-vault=keystore
-vault-file={{ keycloak_ks_vault_file }}
-vault-type={{ keycloak_ks_vault_type }}
-vault-pass={{ keycloak_ks_vault_pass }}
-{% endif %}
-
-
-# Providers
-{% for provider in keycloak_providers %}
-{% if provider.default is defined and provider.default %}
-spi-{{ provider.spi }}-provider={{ provider.id }}
-{% endif %}
-{% if provider.properties is defined %}{% for property in provider.properties %}
-spi-{{ provider.spi }}-{{ provider.id }}-{{ property.key }}={{ property.value }}
-{% endfor %}{% endif %}
-{% endfor %}

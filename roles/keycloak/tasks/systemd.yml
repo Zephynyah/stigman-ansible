@@ -12,7 +12,7 @@
   notify:
     - restart keycloak
   tags:
-    - keyclaok
+    - keycloak
 
 - name: "Configure systemd unit file for keycloak service"
   ansible.builtin.template:
@@ -26,4 +26,4 @@
   notify:
     - restart keycloak
   tags:
-    - keyclaok
+    - keycloak
